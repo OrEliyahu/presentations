@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Tutor MCP: Internal Keynote</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="keynote.css" />
+  </head>
+  <body>
+    <main>
+      <!-- Slide 1: Title -->
+      <section class="slide" id="title" data-slide="1">
+        <h1>AI Tutor MCP</h1>
+        <p class="subtitle">Live app data for agents and vibe coders.</p>
+        <p class="meta">Internal walkthrough · Backend team</p>
+      </section>
+
+      <!-- Slide 2: Why this exists -->
+      <section class="slide" id="why" data-slide="2">
+        <h2>Two callers</h2>
+        <p class="lede">One tool surface, two kinds of caller.</p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>You, vibe coding</h3>
+            <p>
+              Your Claude / Cursor reads live AI Tutor data as the logged-in
+              user. No manual SQL, no curl, no copy-pasting Mongo IDs.
+            </p>
+            <ul>
+              <li>"Show me the lifecycle of student X."</li>
+              <li>"Look up user Y: cohort, status, last activity."</li>
+              <li>"Block user Z, here's the reason."</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>In-app agents</h3>
+            <p>
+              Server-side agents (e.g. the Tutor) act on behalf of a user with a
+              scoped token the user themselves cannot mint.
+            </p>
+            <ul>
+              <li>Tutor decides a lesson is complete → calls the tool.</li>
+              <li>Student cannot call the same tool to self-complete.</li>
+              <li>Same surface, different visible tools per actor.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: MCP protocol in 60 seconds -->
+      <section class="slide" id="mcp-101" data-slide="3">
+        <h2>MCP in 60 seconds</h2>
+        <p class="lede">JSON-RPC over HTTP. One endpoint, two methods you'll touch.</p>
+
+        <ul>
+          <li>
+            <strong>Endpoint:</strong> <code>POST /api/mcp/user</code> on
+            <code>mcp.maestro.org</code>
+          </li>
+          <li><strong>tools/list:</strong> agent asks "what can I do here?"</li>
+          <li>
+            <strong>tools/call:</strong> agent invokes a tool with validated
+            input
+          </li>
+          <li>
+            <strong>Bearer auth:</strong> OAuth 2.1 bearer token (we use a JWT)
+            in the <code>Authorization</code> header
+          </li>
+        </ul>
+
+        <p>
+          Built on the official <code>@modelcontextprotocol/sdk</code>. Works
+          with Claude Code, the Anthropic API MCP connector, the OpenAI
+          Responses API MCP tool, and any compliant client.
+        </p>
+      </section>
+
+      <!-- Slide 4: Live demo -->
+      <section class="slide" id="demo" data-slide="4">
+        <h2>Live demo</h2>
+        <p class="lede">
+          Claude Code, connected to <code>mcp.maestro.org/api/mcp/user</code>.
+        </p>
+
+        <figure
+          class="demo-illo"
+          aria-label="Claude Code on the left, MCP server on the right, connected by a live wire with a traveling pulse."
+        >
+          <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" role="img">
+            <defs>
+              <style>
+                .demo-illo svg .panel {
+                  fill: var(--surface);
+                  stroke: var(--rule-strong);
+                  stroke-width: 1;
+                }
+                .demo-illo svg .divider {
+                  stroke: var(--rule);
+                  stroke-width: 0.75;
+                }
+                .demo-illo svg .row {
+                  fill: var(--surface-2);
+                }
+                .demo-illo svg .row-strong {
+                  fill: var(--surface);
+                  stroke: var(--rule-strong);
+                  stroke-width: 0.5;
+                }
+                .demo-illo svg .tool-call {
+                  fill: var(--accent-soft);
+                  stroke: var(--accent);
+                  stroke-width: 0.75;
+                }
+                .demo-illo svg .label {
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  letter-spacing: 0.14em;
+                  fill: var(--ink-soft);
+                  text-transform: uppercase;
+                }
+                .demo-illo svg .label-faint {
+                  font-family: var(--font-mono);
+                  font-size: 8.5px;
+                  letter-spacing: 0.1em;
+                  fill: var(--ink-faint);
+                }
+                .demo-illo svg .label-accent {
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  letter-spacing: 0.14em;
+                  fill: var(--accent-ink);
+                  text-transform: uppercase;
+                }
+                .demo-illo svg .quote {
+                  font-family: var(--font-serif);
+                  font-style: italic;
+                  font-size: 14px;
+                  fill: var(--ink);
+                }
+                .demo-illo svg .wire {
+                  fill: none;
+                  stroke: var(--ink-soft);
+                  stroke-width: 1;
+                  stroke-dasharray: 1 4;
+                  stroke-linecap: round;
+                  opacity: 0.7;
+                }
+                .demo-illo svg .pulse {
+                  fill: var(--accent);
+                }
+                @keyframes demo-blink {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.25; }
+                }
+                .demo-illo svg .blink {
+                  animation: demo-blink 1.6s ease-in-out infinite;
+                  transform-origin: center;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                  .demo-illo svg .blink { animation: none; }
+                  .demo-illo svg .pulse-motion { display: none; }
+                }
+              </style>
+            </defs>
+
+            <!-- LEFT: Claude Code -->
+            <g transform="translate(28,40)">
+              <rect class="panel" width="240" height="160" rx="3" />
+              <text class="label" x="14" y="22">CLAUDE CODE</text>
+              <line class="divider" x1="14" y1="32" x2="226" y2="32" />
+              <text class="quote" x="14" y="60">“list or’s lessons.”</text>
+              <rect class="row" x="14" y="80" width="160" height="6" rx="1" />
+              <rect class="row" x="14" y="94" width="200" height="6" rx="1" />
+              <rect class="row" x="14" y="108" width="120" height="6" rx="1" />
+              <rect class="tool-call" x="14" y="124" width="180" height="22" rx="2" />
+              <text class="label-accent" x="22" y="139">→ get_lessons()</text>
+            </g>
+
+            <!-- RIGHT: MCP server -->
+            <g transform="translate(372,40)">
+              <rect class="panel" width="240" height="160" rx="3" />
+              <text class="label" x="14" y="22">MCP · MAESTRO.ORG</text>
+              <line class="divider" x1="14" y1="32" x2="226" y2="32" />
+              <text class="label-faint" x="14" y="50">/api/mcp/user</text>
+
+              <g transform="translate(14,62)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">get_lessons</text>
+              </g>
+              <g transform="translate(14,86)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">get_assignments</text>
+              </g>
+              <g transform="translate(14,110)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">submit_answer</text>
+              </g>
+            </g>
+
+            <!-- WIRE between the panels -->
+            <path
+              id="demo-wire"
+              class="wire"
+              d="M 268 120 C 304 60, 336 60, 372 120"
+            />
+
+            <!-- Pulse traveling along the wire -->
+            <g class="pulse-motion">
+              <circle class="pulse" r="3.5">
+                <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
+                  <mpath href="#demo-wire" />
+                </animateMotion>
+              </circle>
+            </g>
+
+            <!-- LIVE badge above the arc -->
+            <g transform="translate(298,30)">
+              <circle class="pulse blink" cx="0" cy="-3" r="3.5" />
+              <text class="label-accent" x="10" y="0">LIVE</text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <!-- Slide 5: Tool catalog today -->
+      <section class="slide" id="catalog" data-slide="5">
+        <h2>What's there today</h2>
+        <p class="lede">Tools split by <em>whose data they touch</em>.</p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Self-acting (<code>tools/self/</code>)</h3>
+            <p>
+              Operate on the caller only, never take a target id. Per-tool actor
+              gating decides who actually sees them.
+            </p>
+            <ul>
+              <li><code>get_profile</code> (any actor)</li>
+              <li><code>mark_todo_actions_viewed</code> (any actor)</li>
+              <li>
+                <code>send_email</code>: <code>agent</code> only (real email;
+                humans don't get this)
+              </li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Admin (<code>tools/admin/</code>)</h3>
+            <p>
+              Take a target <code>userId</code> / <code>email</code>. Gated to
+              human admins with the right permission.
+            </p>
+            <ul>
+              <li><code>get_user</code></li>
+              <li><code>block_user</code> / <code>unblock_user</code></li>
+              <li><code>get_student_lifecycle</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="footnote">
+          Folder location is a code-organization convention. Visibility is
+          decided by the <code>@McpActorAccess</code> and
+          <code>@McpAccess</code> decorators on each method.
+        </p>
+      </section>
+
+      <!-- Slide 6: Auth: the JWT -->
+      <section class="slide" id="auth-jwt" data-slide="6">
+        <h2>The token</h2>
+        <p class="lede">
+          Every call carries a signed JWT. Five claims do all the work.
+        </p>
+
+        <p>
+          A <abbr title="JSON Web Token">JWT</abbr> is a small signed
+          envelope: three base64 chunks &mdash; <em>header</em>,
+          <em>claims</em>, <em>signature</em> &mdash; joined by dots
+          (<code>xxx.yyy.zzz</code>). The server checks the signature, then
+          trusts the claims inside. The five rows below are those claims.
+          Paste one into
+          <a href="https://www.jwt.io/" target="_blank" rel="noopener noreferrer"
+            >jwt.io</a
+          >
+          to see the parts.
+        </p>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Claim</th>
+                <th>Value</th>
+                <th>What it means</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>sub</code></td>
+                <td>user id</td>
+                <td>Whose data the call sees.</td>
+              </tr>
+              <tr>
+                <td><code>actor</code></td>
+                <td><code>'user'</code> | <code>'agent'</code></td>
+                <td>
+                  Who is holding the token. Routes which tools are visible.
+                </td>
+              </tr>
+              <tr>
+                <td><code>scope</code></td>
+                <td><code>mcp-user</code></td>
+                <td>Which surface this token unlocks.</td>
+              </tr>
+              <tr>
+                <td><code>iss</code></td>
+                <td><code>ai-tutor</code></td>
+                <td>Issuer.</td>
+              </tr>
+              <tr>
+                <td><code>aud</code></td>
+                <td><code>mcp-user</code></td>
+                <td>Audience.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="footnote">
+          <code>McpUserGuard</code> verifies the JWT, loads the user, resolves
+          permissions, and attaches <code>{ user, actor }</code> as
+          <code>McpContext</code>.
+        </p>
+      </section>
+
+      <!-- Slide 7: Two flows, one surface -->
+      <section class="slide" id="auth-flows-overview" data-slide="7">
+        <h2>Two ways to get a token</h2>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Flow A: OIDC</h3>
+            <p>
+              Human in a client (Claude Code, Cursor). Browser-based consent.
+              The token lands in the client automatically.
+            </p>
+            <p>
+              <strong>Result:</strong> token with <code>actor='user'</code>.
+            </p>
+          </div>
+          <div class="col">
+            <h3>Flow B: Backend-minted agent token</h3>
+            <p>
+              The backend mints a scoped token so one of its own agents can act
+              on a user's behalf. No browser, no consent click. The trigger
+              comes from inside the system.
+            </p>
+            <p>Two shapes:</p>
+            <ul>
+              <li>
+                <strong>Live:</strong> a user action spawns an agent (tutor
+                session starts when a student opens a lesson).
+              </li>
+              <li>
+                <strong>Scheduled:</strong> a job iterates a cohort and spawns a
+                per-user agent (re-engagement emailer, weekly summary,
+                onboarding nudge).
+              </li>
+            </ul>
+            <p>
+              <strong>Result:</strong> token with <code>actor='agent'</code>,
+              only the backend can produce it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 8: OIDC quick primer -->
+      <section class="slide" id="oidc-primer" data-slide="8">
+        <h2>OIDC, briefly</h2>
+        <p class="lede">
+          OAuth 2.0 + an identity layer. Standard vocabulary so any compliant
+          MCP client can connect itself.
+        </p>
+
+        <ul>
+          <li>
+            <strong>Authorization Server:</strong> issues tokens. Lives on
+            <code>mcp.maestro.org</code>.
+          </li>
+          <li>
+            <strong>Resource Server:</strong> the MCP surface that accepts
+            tokens.
+          </li>
+          <li>
+            <strong>Dynamic Client Registration (DCR):</strong> the client
+            (Claude Code) registers itself on the fly. No human ops step.
+          </li>
+          <li>
+            <strong>Discovery:</strong> the client fetches a well-known URL and
+            learns where to send the user, where to refresh tokens, what scopes
+            exist.
+          </li>
+          <li>
+            <strong>Authorization Code + PKCE:</strong> the grant type.
+            Browser-mediated consent, no client secret in the wild.
+          </li>
+          <li>
+            <strong>Identity provider:</strong> Google, hard-gated to
+            <code>@masterschool.com</code> accounts. Anyone else hitting the
+            consent screen is rejected before a token is ever issued.
+          </li>
+        </ul>
+
+        <p class="footnote">
+          Net effect: paste the MCP URL into Claude, sign in with your
+          Masterschool Google account, done.
+        </p>
+
+        <h3>Built on</h3>
+        <ul>
+          <li>
+            <code>oidc-provider</code> (panva): the certified Node OIDC
+            implementation. We get DCR (RFC 7591), PKCE, Resource Indicators
+            (RFC 8707), discovery, and JWKS rotation out of the box. Writing
+            this ourselves means shipping crypto and spec compliance, which is a
+            bad time. Author is on the OAuth WG; the library is what most
+            production Node OIDC servers run.
+          </li>
+          <li>
+            <code>passport-google-oauth20</code>: handles the Google sign-in
+            round-trip on the back of the OIDC interaction screen. The standard
+            choice in Node, boring, exactly what we need.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 9: Flow A, end to end -->
+      <section class="slide wide" id="flow-oidc" data-slide="9">
+        <h2>Flow A: OIDC, end to end</h2>
+        <p class="lede">
+          What actually happens between pasting the URL and the first tool call.
+          The whole dance is automatic; the user just clicks "Sign in with
+          Google."
+        </p>
+
+        <div class="flow-with-diagram">
+          <ol>
+            <li>
+              Paste the MCP URL into Claude Code (or any compliant client). The
+              client tries <code>POST /api/mcp/user</code> with no token.
+            </li>
+            <li>
+              MCP responds <strong>401</strong> with
+              <code>WWW-Authenticate: Bearer realm="mcp-user"</code>. That
+              header is the cue: there's an auth server somewhere; go find it.
+            </li>
+            <li>
+              Claude fetches
+              <code>/.well-known/oauth-protected-resource</code>
+              (<abbr title="RFC 9728: Protected Resource Metadata"
+                >RFC 9728</abbr
+              >) on the resource host. The response says: "the authorization
+              server for me lives at <code>mcp.maestro.org/api/oidc</code>."
+            </li>
+            <li>
+              Claude fetches
+              <code>/.well-known/oauth-authorization-server</code> (and/or
+              <code>openid-configuration</code>) at the AS. That metadata lists
+              the registration, authorization, and token endpoints, the JWKS
+              URI, supported scopes, and that PKCE is required.
+            </li>
+            <li>
+              <strong>Dynamic Client Registration</strong>
+              (<abbr
+                title="RFC 7591: OAuth 2.0 Dynamic Client Registration Protocol"
+                >RFC 7591</abbr
+              >): Claude POSTs its name, redirect URI, and grant types to the
+              registration endpoint. Gets back a <code>client_id</code>. No
+              client secret (it's a public client).
+            </li>
+            <li>
+              Claude generates a <strong>PKCE pair</strong>: a random
+              <code>code_verifier</code> and its hash
+              <code>code_challenge = SHA256(verifier)</code>. Keeps the verifier
+              in memory.
+            </li>
+            <li>
+              Browser opens to the authorize endpoint with the
+              <code>client_id</code>, redirect URI, scopes, and the
+              <code>code_challenge</code>.
+            </li>
+            <li>
+              mcp.maestro.org renders <code>/api/oidc/login</code>: "Sign in
+              with Google."
+            </li>
+            <li>
+              Google authenticates the user and returns the identity. The OIDC
+              server checks the email domain; anything that doesn't end in
+              <code>@masterschool.com</code> is rejected before a token is ever
+              issued.
+            </li>
+            <li>
+              Consent screen shows the client name and redirect URI (so the
+              admin can spot a phishing client registered via open DCR). For CLI
+              and desktop clients (Claude Code, Cursor) the redirect URI will be
+              a
+              <code>http://127.0.0.1:&lt;port&gt;</code> loopback address;
+              that's normal. User clicks Authorize.
+            </li>
+            <li>
+              AS redirects back to Claude with a one-time authorization code.
+              Claude POSTs the code
+              <em>plus the original <code>code_verifier</code></em> to the token
+              endpoint. AS checks <code>SHA256(verifier) == challenge</code>; if
+              matched, issues an access token (<code>actor='user'</code>) and a
+              refresh token.
+            </li>
+            <li>
+              Claude retries <code>POST /api/mcp/user</code> with
+              <code>Authorization: Bearer ...</code>. MCP returns the tools/call
+              result, filtered by role + actor.
+            </li>
+          </ol>
+
+          <aside class="phase-diagram" aria-label="High-level phases of Flow A">
+            <ol class="phases">
+              <li class="phase">
+                <span class="phase-num">Steps 1&ndash;4</span>
+                <span class="phase-label">Discover</span>
+                <span class="phase-detail"
+                  >401 challenge, then two
+                  <code>.well&#8209;known</code> lookups</span
+                >
+              </li>
+              <li class="phase">
+                <span class="phase-num">Step 5</span>
+                <span class="phase-label">Register</span>
+                <span class="phase-detail"
+                  >Dynamic Client Registration, gets
+                  <code>client_id</code></span
+                >
+              </li>
+              <li class="phase">
+                <span class="phase-num">Steps 6&ndash;10</span>
+                <span class="phase-label">Authorize</span>
+                <span class="phase-detail"
+                  >PKCE pair, Google sign-in, domain check, consent</span
+                >
+              </li>
+              <li class="phase">
+                <span class="phase-num">Step 11</span>
+                <span class="phase-label">Exchange</span>
+                <span class="phase-detail"
+                  >Code + verifier &rarr; access &amp; refresh tokens</span
+                >
+              </li>
+              <li class="phase">
+                <span class="phase-num">Step 12</span>
+                <span class="phase-label">Call</span>
+                <span class="phase-detail"
+                  >Bearer token on <code>POST /api/mcp/user</code></span
+                >
+              </li>
+            </ol>
+          </aside>
+        </div>
+
+        <h3>What is PKCE?</h3>
+        <p>
+          <strong>Proof Key for Code Exchange</strong>
+          (<abbr title="RFC 7636">RFC 7636</abbr>). It defends the authorization
+          code from interception in public clients (CLIs, desktop apps, browser
+          extensions) that can't safely store a client secret.
+        </p>
+        <p>
+          The mechanic in one sentence: the client commits to a secret
+          <em>before</em> the redirect (sends the hash), then proves it owns
+          that secret <em>after</em> the redirect (sends the original) when
+          exchanging the code. An attacker who intercepts the auth code on the
+          redirect URL has nothing to do with it; without the verifier, the
+          token endpoint refuses the exchange.
+        </p>
+
+        <h3>Read the full spec</h3>
+        <ul>
+          <li>
+            <strong>MCP Authorization</strong> (the protocol that wires all of
+            this together):
+            <a
+              href="https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization"
+              >modelcontextprotocol.io/specification</a
+            >
+          </li>
+          <li>
+            <strong>RFC 9728</strong> &middot; OAuth 2.0 Protected Resource
+            Metadata:
+            <a href="https://datatracker.ietf.org/doc/html/rfc9728"
+              >datatracker.ietf.org/doc/html/rfc9728</a
+            >
+          </li>
+          <li>
+            <strong>RFC 7591</strong> &middot; Dynamic Client Registration:
+            <a href="https://datatracker.ietf.org/doc/html/rfc7591"
+              >datatracker.ietf.org/doc/html/rfc7591</a
+            >
+          </li>
+          <li>
+            <strong>RFC 7636</strong> &middot; PKCE:
+            <a href="https://datatracker.ietf.org/doc/html/rfc7636"
+              >datatracker.ietf.org/doc/html/rfc7636</a
+            >
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 10: Flow B, end to end -->
+      <section class="slide" id="flow-agent" data-slide="10">
+        <h2>Flow B: Backend mints for an agent</h2>
+        <p class="lede">
+          The same call surface, but the trigger comes from inside the system.
+        </p>
+
+        <ol>
+          <li>
+            <strong>Trigger fires.</strong> Either a user action (student opens
+            a lesson, tutor session spawns) or a scheduled job (cron iterates a
+            cohort, one agent per student).
+          </li>
+          <li>
+            Backend mints an MCP token: <code>sub=userId</code>,
+            <code>actor='agent'</code>. No browser, no consent.
+          </li>
+          <li>Backend spawns the server-side agent with the token.</li>
+          <li>Agent calls <code>tools/list</code> with the bearer header.</li>
+          <li>
+            MCP returns only the tools gated to <code>actor='agent'</code>. The
+            student's own user-actor token would never see them.
+          </li>
+          <li>
+            Agent calls <code>tools/call complete_lesson</code> (or
+            <code>send_reengagement_email</code>, etc.).
+          </li>
+          <li>MCP returns the result.</li>
+        </ol>
+
+        <p class="footnote">
+          Actor-gating is enforced twice: tools the agent shouldn't see are
+          filtered out of <code>tools/list</code>, and direct
+          <code>tools/call</code> attempts on hidden tools are rejected.
+        </p>
+      </section>
+
+      <!-- Slide 11: When each flow applies -->
+      <section class="slide" id="flow-comparison" data-slide="11">
+        <h2>When to use which</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Flow A: OIDC</th>
+                <th>Flow B: Agent mint</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Caller</td>
+                <td>A human, in an MCP client</td>
+                <td>A server-side agent</td>
+              </tr>
+              <tr>
+                <td>Consent</td>
+                <td>Browser, every new client</td>
+                <td>Implicit; trigger originates inside the system</td>
+              </tr>
+              <tr>
+                <td><code>actor</code> claim</td>
+                <td><code>'user'</code></td>
+                <td><code>'agent'</code></td>
+              </tr>
+              <tr>
+                <td>Who can mint</td>
+                <td>The OIDC server, after user consent</td>
+                <td>The backend, for its own agents only</td>
+              </tr>
+              <tr>
+                <td>Use case</td>
+                <td>Vibe coding, admin debugging</td>
+                <td>
+                  Tutor acting on the student's behalf; scheduled jobs running a
+                  per-user agent (re-engagement, summaries)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Slide 12: Three authorization layers -->
+      <section class="slide" id="authz-layers" data-slide="12">
+        <h2>Identity is not authorization</h2>
+        <p class="lede">
+          The token says <em>who</em> you are. The decorators decide
+          <em>what you can call</em>. The handler runs the action.
+        </p>
+
+        <ol>
+          <li>
+            <h3>Layer A: the <code>actor</code> claim</h3>
+            <p>
+              Routing hint: human vs autonomous agent. Picks which tools show up
+              in <code>tools/list</code>. Not a security boundary on its own;
+              the decorators below are.
+            </p>
+          </li>
+          <li>
+            <h3>Layer B: decorators (the auth boundary)</h3>
+            <pre><code>@McpActorAccess(['user'])
+@McpAccess({ roles: [Role.SuperAdmin] })
+@McpAccess({ permissions: ['users:block'] })
+@McpPolicies(TargetUserInCallerCohortPolicy)</code></pre>
+            <p>This is where authorization lives. Two flavors stack here:</p>
+            <ul>
+              <li>
+                <strong>Static, on the caller's claims.</strong>
+                <code>@McpActorAccess</code> and <code>@McpAccess</code> filter
+                <code>tools/list</code> and reject <code>tools/call</code>
+                based on actor, roles, and permissions. Cheap, evaluated up
+                front.
+              </li>
+              <li>
+                <strong>Dynamic, on the validated input.</strong>
+                <code>@McpPolicies</code> runs after Zod parses the input,
+                before the handler runs. Use it when authorization depends on
+                the arguments (e.g. "this target user belongs to the caller's
+                cohort"). First throw wins; the tool body never runs.
+              </li>
+            </ul>
+            <p>
+              Stack to AND. No decorators = visible to any authenticated caller.
+              If a tool is sensitive, the decorator stack on the method is the
+              only thing standing between the caller and the handler.
+            </p>
+          </li>
+          <li>
+            <h3>Layer C: the handler runs your action</h3>
+            <p>
+              Once a call passes the decorators, the CQRS handler executes the
+              domain action: state-machine checks, idempotency, side effects,
+              persistence. It enforces invariants ("can't complete an unstarted
+              lesson"), not caller identity. If you need defense-in-depth on a
+              sensitive tool, the handler can re-check; by default it trusts
+              that authorization happened upstream.
+            </p>
+            <p class="callout">Decorators gate. Handlers run.</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Slide 13: Deployment note -->
+      <section class="slide" id="deployment" data-slide="13">
+        <h2>Where it runs</h2>
+        <p class="lede">Same image, two services, two hostnames.</p>
+
+        <ul>
+          <li>
+            <code>api.maestro.org</code>: main API task.
+            <code>MCP_ENABLED</code> unset. MCP routes return 404.
+          </li>
+          <li>
+            <code>mcp.maestro.org</code>: dedicated ECS service running the same
+            image with <code>MCP_ENABLED=true</code> and
+            <code>start:mcp:prod</code>.
+          </li>
+        </ul>
+
+        <p>
+          Why the split: isolate MCP load and blast radius from the main API,
+          and keep the OAuth/OIDC routes off the main hostname.
+        </p>
+      </section>
+
+      <!-- Slide 14: Adding a tool -->
+      <section class="slide" id="adding-a-tool" data-slide="14">
+        <h2>Adding a tool</h2>
+        <p class="lede">
+          The vibe-coding slide. Use the <code>add-mcp-tool</code> skill; it
+          walks the decision tree.
+        </p>
+
+        <h3>The 80% case</h3>
+        <ol>
+          <li>
+            Pick <code>self/&lt;concern&gt;/</code> or
+            <code>admin/&lt;concern&gt;/</code>.
+          </li>
+          <li>
+            Write a Zod input schema.
+            <strong>Every field must <code>.describe(...)</code></strong
+            >. Agents only see what <code>tools/list</code> returns.
+          </li>
+          <li>
+            Write a thin tool method: read <code>ctx</code>, dispatch one CQRS
+            query/command, return the result.
+          </li>
+          <li>
+            Stack decorators if access needs narrowing. Add tests under
+            <code>backend/test/mcp/user/tools/...</code>.
+          </li>
+        </ol>
+
+        <h3>What a tool actually looks like</h3>
+        <pre><code>@McpTool({
+  name: 'get_profile',
+  description:
+    'Return the authenticated user profile. Use to read identity, contact, or program info for the current user.',
+  inputSchema: getProfileInputSchema,
+})
+getProfile(_input: GetProfileInput, ctx: McpContext) {
+  return this.queryBus
+    .execute(new GetUserQuery(ctx.user._id.toString()))
+    .then((user) => {
+      if (!user) throw new McpToolError('user not found');
+      return user;
+    });
+}</code></pre>
+
+        <h3>The four decorators</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Decorator</th>
+                <th>When evaluated</th>
+                <th>What it does</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <code
+                    >@McpTool(<wbr />{ name, description, inputSchema })</code
+                  >
+                </td>
+                <td>Tool registration (boot)</td>
+                <td>
+                  Declares the tool contract. Required. Without it, the method
+                  is just a class method, not an MCP tool.
+                </td>
+              </tr>
+              <tr>
+                <td><code>@McpActorAccess([...])</code></td>
+                <td>Discovery + dispatch</td>
+                <td>
+                  Filters by <code>ctx.actor</code>. Any-of match. A tool with
+                  <code>['user']</code> is invisible to agent tokens (and vice
+                  versa). Omit for "any authenticated caller."
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>@McpAccess(<wbr />{ roles, permissions })</code>
+                </td>
+                <td>Discovery + dispatch</td>
+                <td>
+                  Filters by the user's app role and permissions.
+                  <strong>Roles: any-of</strong> (one match passes).
+                  <strong>Permissions: all-of</strong> (every title required).
+                  When both are given, both must hold (AND across dimensions).
+                </td>
+              </tr>
+              <tr>
+                <td><code>@McpPolicies(...PolicyClasses)</code></td>
+                <td>Per call, after input validation</td>
+                <td>
+                  Runs domain policies against the validated input. First throw
+                  wins; the tool body never runs. Use for input-shaped checks
+                  that need DI (e.g. "this email actually belongs to a student
+                  in the caller's cohort").
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="footnote">
+          Stack them; they AND together. <code>@McpTool</code> is required, the
+          other three are optional and additive. <code>@McpActorAccess</code> +
+          <code>@McpAccess</code> filter <em>visibility</em>;
+          <code>@McpPolicies</code> validates <em>input</em>; the domain handler
+          is the real boundary.
+        </p>
+
+        <h3>Three rules</h3>
+        <ul>
+          <li>
+            <strong>Tools are thin and CQRS-agnostic.</strong> Business logic
+            lives in handlers.
+          </li>
+          <li>
+            <strong>Context stays inside the framework.</strong> Don't thread
+            <code>McpContext</code> into a domain handler. Pull values out and
+            pass them explicitly.
+          </li>
+          <li>
+            <strong>Describe every field.</strong> The discovery test fails if
+            you don't.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 15: How to use it -->
+      <section class="slide" id="how-to-use" data-slide="15">
+        <h2>How to use it</h2>
+        <p class="lede">
+          Two demos to close. One you can copy tomorrow, one to plant the seed
+          for what's next.
+        </p>
+
+        <h3>Demo 1 &middot; Add a new admin tool, live</h3>
+        <p>
+          I'll add an admin <code>send_email</code> tool from scratch: templated
+          email (welcome-back, missing-info, onboarding nudge) to any user,
+          gated <code>actor='user'</code> + admin permission. New
+          <code>tools/admin/email/</code> concern, audit-logged with the calling
+          admin as actor.
+        </p>
+        <p>
+          Watch the recipe from slide 14 in motion: pick the folder, write the
+          Zod input, write the thin tool method, stack the decorators, add
+          tests. End to end in one sitting.
+        </p>
+
+        <h3>Demo 2 &middot; The agent-mint flow</h3>
+        <p>
+          The minting endpoint and the
+          <code>actor='agent'</code> token shape are already shipped. What we
+          don't have yet is a real production agent calling it. So this one is a
+          walkthrough, not a side-effect demo.
+        </p>
+        <p>
+          We'll trace the path: backend job mints the token, spawns the agent,
+          agent calls <code>tools/list</code>, sees only the agent-actor tools,
+          fires <code>send_email</code> on behalf of a student. The first real
+          agent on this path (a re-engagement emailer) is what comes next.
+        </p>
+
+        <h3>Get involved</h3>
+        <ul>
+          <li>
+            Connect your Claude Code to
+            <code>mcp.maestro.org/api/mcp/user</code> today.
+          </li>
+          <li>
+            Open a PR adding a tool. Start from the
+            <code>add-mcp-tool</code> skill.
+          </li>
+          <li>
+            Read the source of truth:
+            <code>backend/src/mcp/README.md</code>.
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

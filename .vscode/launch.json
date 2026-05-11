@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Serve presentations",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "python3 server.py",
+      "cwd": "${workspaceFolder}",
+      "serverReadyAction": {
+        "pattern": "Open (http://[^ ]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "Serve presentations (custom port)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "python3 server.py --port ${input:port}",
+      "cwd": "${workspaceFolder}",
+      "serverReadyAction": {
+        "pattern": "Open (http://[^ ]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "Serve presentations (LAN)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "python3 server.py --host 0.0.0.0",
+      "cwd": "${workspaceFolder}",
+      "serverReadyAction": {
+        "pattern": "Open (http://[^ ]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "port",
+      "type": "promptString",
+      "description": "Port to serve on",
+      "default": "8000"
+    }
+  ]
+}

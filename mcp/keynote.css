@@ -1,0 +1,551 @@
+/* AI Tutor MCP keynote: editorial-engineering, light, restrained.
+   One accent (terracotta), warm tinted neutrals, no SaaS chrome. */
+
+:root {
+  --bg: oklch(0.985 0.008 85);
+  --surface: oklch(0.965 0.012 85);
+  --surface-2: oklch(0.945 0.014 85);
+  --ink: oklch(0.22 0.02 60);
+  --ink-soft: oklch(0.42 0.02 60);
+  --ink-faint: oklch(0.5 0.015 60);
+  --rule: oklch(0.86 0.01 80);
+  --rule-strong: oklch(0.7 0.015 70);
+  --accent: oklch(0.5 0.13 38);
+  --accent-soft: oklch(0.94 0.035 38);
+  --accent-ink: oklch(0.32 0.1 38);
+  --code-bg: oklch(0.95 0.012 85);
+  --code-ink: oklch(0.3 0.02 60);
+  --callout-bg: oklch(0.96 0.025 90);
+
+  --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --measure: 68ch;
+  --gutter: clamp(1.5rem, 4vw, 4rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 17px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01', 'cv11', 'calt';
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main {
+  display: block;
+}
+
+/* ----- Slide as section ----- */
+
+.slide {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 7rem) var(--gutter);
+  position: relative;
+  border-bottom: 1px solid var(--rule);
+}
+
+.slide:last-of-type {
+  border-bottom: none;
+}
+
+/* Wide slide: used when content needs more horizontal room (Flow A's
+   bullets-plus-sidebar diagram). Falls back to --measure on small screens. */
+.slide.wide {
+  max-width: clamp(36rem, 92vw, 60rem);
+}
+
+/* Slide number: editorial margin mark */
+.slide::before {
+  content: '· ' attr(data-slide);
+  position: absolute;
+  top: clamp(2rem, 4vw, 3rem);
+  left: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  /* On phones, surface the slide number inline at the top of the section
+     instead of absolutely; otherwise it overlaps with the heading. */
+  .slide::before {
+    position: static;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .slide {
+    padding-top: clamp(2.5rem, 8vw, 4rem);
+  }
+}
+
+/* ----- Title slide ----- */
+
+#title {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#title h1 {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  margin: 0 0 1rem;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+#title .subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  color: var(--ink-soft);
+  margin: 0 0 2.5rem;
+  font-weight: 400;
+}
+
+#title .meta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+/* ----- Headings ----- */
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  margin: 0 0 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  margin: 2rem 0 0.75rem;
+  font-weight: 600;
+}
+
+/* ----- Lede + body text ----- */
+
+.lede {
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin: 0 0 2.5rem;
+  font-weight: 400;
+}
+
+p {
+  margin: 0 0 1.1rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+.footnote {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+  margin-top: 2rem;
+}
+
+.presenter-note {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.6rem 0.9rem;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Links: editorial accent, thin underline, no SaaS-blue */
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.15s ease;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--accent-ink);
+}
+
+/* Live demo illustration (slide 4) */
+.demo-illo {
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.demo-illo svg {
+  display: block;
+  width: 100%;
+  max-width: 44rem;
+  height: auto;
+}
+
+.callout {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--accent-ink);
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 1.5rem 0;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+/* ----- Lists ----- */
+
+ul,
+ol {
+  padding-left: 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+li::marker {
+  color: var(--ink-faint);
+}
+
+ol {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+}
+
+ol > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+ol > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+/* nested lists inside ol items */
+ol ul,
+ol ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ----- Two-column ----- */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  margin: 1rem 0 2rem;
+}
+
+.two-col .col {
+  border-top: 2px solid var(--ink);
+  padding-top: 1rem;
+}
+
+.two-col .col h3 {
+  margin-top: 0;
+}
+
+@media (max-width: 720px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----- Code ----- */
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 0.12em 0.35em;
+  border-radius: 2px;
+}
+
+pre {
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 1.25rem 1.5rem;
+  border-radius: 3px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  border-left: none;
+  border: 1px solid var(--rule);
+  margin: 1.25rem 0;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ----- Tables ----- */
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  /* Subtle scrollbar treatment so the affordance is present but not loud. */
+  scrollbar-width: thin;
+}
+
+.table-scroll table {
+  margin: 0;
+  /* On narrow screens, table content drives a wider min-width so cells
+     don't squeeze beyond legibility; the parent scrolls instead. */
+  min-width: 32rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+th {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.5rem;
+}
+
+td code {
+  font-size: 0.82em;
+}
+
+/* ----- Bullets + diagram (Flow A) ----- */
+
+.flow-with-diagram {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+  margin: 0 0 2rem;
+}
+
+.flow-with-diagram > ol {
+  margin: 0;
+}
+
+/* Wider collapse threshold than the global 720px: this layout has a
+   16rem sidebar, so the bullets column gets cramped earlier than a plain
+   two-column. Kept distinct on purpose. */
+@media (max-width: 880px) {
+  .flow-with-diagram {
+    grid-template-columns: 1fr;
+  }
+}
+
+.phase-diagram {
+  position: sticky;
+  top: 1.5rem;
+}
+
+ol.phases {
+  /* Override the global circled-numeral counter; the phase boxes are
+     self-numbered and shouldn't get the counter pseudo-element. */
+  counter-reset: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+ol.phases > li.phase {
+  counter-increment: none;
+  padding: 0.7rem 0.85rem;
+  margin: 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  border-radius: 3px;
+  display: grid;
+  gap: 0.15rem;
+  position: relative;
+}
+
+ol.phases > li.phase::before {
+  /* Suppress the circled-numeral default. */
+  content: none;
+}
+
+ol.phases > li.phase + li.phase {
+  margin-top: 1.4rem;
+}
+
+/* Arrow between phases */
+ol.phases > li.phase + li.phase::after {
+  content: '';
+  position: absolute;
+  top: -1.1rem;
+  left: 50%;
+  width: 1px;
+  height: 0.9rem;
+  background: var(--rule-strong);
+}
+
+ol.phases > li.phase + li.phase::before {
+  content: '';
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--rule-strong);
+}
+
+.phase-num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.phase-label {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.phase-detail {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.phase-detail code {
+  font-size: 0.78rem;
+}
+
+@media (max-width: 880px) {
+  .phase-diagram {
+    position: static;
+  }
+  ol.phases {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  ol.phases > li.phase {
+    flex: 1 1 9rem;
+  }
+  ol.phases > li.phase + li.phase {
+    margin-top: 0;
+  }
+  ol.phases > li.phase + li.phase::before,
+  ol.phases > li.phase + li.phase::after {
+    content: none;
+  }
+}
+
+/* Strong inside body: terracotta accent for keywords */
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+em {
+  font-style: italic;
+}
+
+/* Inline accent for first letter of slide leads: disabled, too cliché */
+
+/* Selection */
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* Print */
+@media print {
+  .slide {
+    page-break-after: always;
+    border-bottom: none;
+    min-height: auto;
+  }
+  body {
+    font-size: 11pt;
+  }
+}
