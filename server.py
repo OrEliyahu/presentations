@@ -20,6 +20,7 @@ import argparse
 import html
 import os
 import queue
+import shutil
 import threading
 import time
 from functools import partial
@@ -117,7 +118,7 @@ def list_presentations() -> list[tuple[str, str]]:
         target = find_entry(entry)
         if target is None:
             continue
-        items.append((entry.name, f"/{entry.name}/{target.name}"))
+        items.append((entry.name, f"{entry.name}/{target.name}"))
     return items
 
 
@@ -283,6 +284,24 @@ class PresentationHandler(SimpleHTTPRequestHandler):
         super().log_message(format, *args)
 
 
+def build_static(out_dir: Path) -> None:
+    """Generate a static site for hosting (e.g. GitHub Pages)."""
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True)
+
+    presentations = list_presentations()
+    ignore = shutil.ignore_patterns(*_IGNORED_NAMES, ".*")
+    for name, _ in presentations:
+        shutil.copytree(ROOT / name, out_dir / name, ignore=ignore)
+
+    (out_dir / "index.html").write_bytes(render_index(presentations))
+    # Tell GitHub Pages not to run Jekyll on our files.
+    (out_dir / ".nojekyll").write_bytes(b"")
+
+    print(f"Built {len(presentations)} presentation(s) to {out_dir}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve presentations locally.")
     parser.add_argument("--port", type=int, default=8000)
@@ -292,9 +311,26 @@ def main() -> None:
         action="store_true",
         help="Disable live-reload on file change.",
     )
+    parser.add_argument(
+        "--build",
+        action="store_true",
+        help="Build a static site to --out and exit (no server).",
+    )
+    parser.add_argument(
+        "--out",
+        default="_site",
+        help="Output directory for --build (default: _site).",
+    )
     args = parser.parse_args()
 
     os.chdir(ROOT)
+
+    if args.build:
+        out = Path(args.out)
+        if not out.is_absolute():
+            out = ROOT / out
+        build_static(out)
+        return
 
     watcher: FileWatcher | None = None
     if not args.no_reload:

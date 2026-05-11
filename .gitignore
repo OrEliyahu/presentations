@@ -24,6 +24,9 @@ ENV/
 # Logs
 *.log
 
+# Build output
+_site/
+
 # IDE (keep .vscode for shared settings; ignore user-specific)
 .idea/
 *.swp
