@@ -118,7 +118,8 @@ def list_presentations() -> list[tuple[str, str]]:
         target = find_entry(entry)
         if target is None:
             continue
-        items.append((entry.name, f"{entry.name}/{target.name}"))
+        url = f"{entry.name}/" if target.name == "index.html" else f"{entry.name}/{target.name}"
+        items.append((entry.name, url))
     return items
 
 
