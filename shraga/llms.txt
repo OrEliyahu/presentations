@@ -1,0 +1,72 @@
+# Shraga
+
+> Autonomous incident commander for Masterschool's engineering team. Watches Sentry, Coralogix, and the dashboard; investigates the root cause of every alert; files a GitHub issue with linked evidence and a suggested fix. If confidence is ≥99% and the diff is small, it tags `@claude /remote-issue-implementation` so Claude Code opens the PR. Otherwise the issue waits for a human.
+
+Today every Sentry alert at Masterschool lands in a Slack channel. Whoever is around burns ~10 minutes on mechanical work — Sentry → Coralogix → GitHub blame → recent commits → Slack thread — before any product thinking starts. Shraga does that warm-up automatically.
+
+## How it works
+
+- **Trigger surfaces (live):** Sentry webhook, Coralogix outbound webhook, dashboard paste of a Sentry URL. Slack @mention is roadmap (next 24 hours, pending workspace approval).
+- **System prompt:** enforces a six-phase loop — Triage → Investigate → Probe → Hypothesize → Draft fix → File. The Hypothesize phase requires the agent to commit to a plain-English root cause with a numeric confidence percentage *before* any write happens. This is the agentic-discipline beat that separates investigation from hallucination.
+- **Live narration:** every phase and tool call streams via SSE to a Google-SSO-gated dashboard (domain-restricted to `masterschool.com`). Anyone watching sees the agent think.
+- **Output:** always a GitHub issue on `Masterschool-Team/Ai-Tutor` with a `## Root cause`, `## Evidence` (linked Sentry events, Coralogix queries, file:line citations), and `## Suggested fix` section. Never opens a PR directly.
+
+## Tools
+
+**Read (live):** `sentry_get_issue`, `sentry_get_event`, `sentry_list_events_for_issue`, `coralogix_cx` (shells out to the `cx` CLI), `github_read_file`, `github_blame`, `github_search_code`, `github_get_recent_commits`, `github_get_pr`, `github_find_open_issue_by_label`.
+
+**Write (live):** `github_create_issue` (requires a `dedup_label` at the tool boundary), `github_comment_on_issue`. No PR creation. No database writes. No prod HTTP calls.
+
+**Roadmap:** `probe_mongo_find`, `probe_flag_status`, `probe_http_get` — wiring next, behind a strict staging allowlist.
+
+## The PR/Issue gate
+
+The agent only delegates a fix to Claude Code when **all** of these hold simultaneously:
+
+- Touches ≤ 3 files
+- ≤ 30 net lines changed
+- No changes to migrations, schema files, auth code, payment code, or public API routes
+- No new dependencies
+- Doesn't delete or rename any exported symbol
+- Confidence from the Hypothesize phase is ≥ 99%
+
+If any rule fails, Shraga files the issue with a `## Suggested approach` section for a human, but does *not* tag `@claude`. Same artifact shape; only the tag changes.
+
+## Dedup is a feature, not a guard
+
+Every trigger produces a deterministic label:
+
+- Sentry → `shraga-sentry-<issue_id>`
+- Coralogix → `shraga-coralogix-<slugified-alert-name>`
+- Deploy → `shraga-deploy-<service>-<sha8>`
+
+Before opening anything, Shraga calls `github_find_open_issue_by_label`. If an open issue with that label exists, repeat firings *comment on the existing issue with new evidence* (new event count, new context, recent deploy if any) instead of spawning a duplicate. Wrappers spawn duplicates; Shraga accrues evidence.
+
+## What 10× means here
+
+- **Time:** ~10 minutes of human warm-up → ~90 seconds of agent investigation.
+- **Cognitive load:** 6 tabs (Sentry, Coralogix, GitHub blame, recent commits, Slack thread, codebase) → 1 GitHub issue with linked evidence.
+- **Coverage:** humans skim only the loudest alerts; Shraga triages 100% of them, and dedup keeps the noise from growing.
+- **Composition:** Shraga → Claude Code → human reviewer. Two agents in a pipeline, with the human as the final approver. Same shape generalizes to any operational task that's currently a Slack thread.
+
+## Safety rails
+
+- **Pause toggle** in the dashboard. Only `or@masterschool.com` can flip it. While paused, every webhook 200-acks with `{ skipped: "shraga paused by admin" }` — no agent run, no tokens spent.
+- **Google SSO** with a `masterschool.com` domain gate on the dashboard. Webhooks bypass auth but are HMAC-verified at the route boundary.
+- **Per-incident audit trail.** Every tool call, every phase transition, every artifact link is persisted in Postgres and streamed via SSE.
+- **No PR auto-merge.** Even when `@claude` opens the PR, a human reviews and merges. Shraga's surface ends at the issue.
+- **Hard-coded write surface.** The only write tool is GitHub issue creation. No DB writes, no HTTP POSTs to prod, no Slack DMs.
+
+## Stack
+
+- Node 24, TypeScript (ESM), Express
+- Anthropic SDK (`@anthropic-ai/sdk`), self-hosted tool-use loop, model `claude-opus-4-7`
+- Postgres on Heroku for incidents/deploys/settings
+- Octokit, Sentry Internal Integration, Coralogix `cx` CLI
+- Deployed at https://shraga-f03b21ad5239.herokuapp.com
+
+## Links
+
+- [Deck (this page)](https://oreliyahu.github.io/presentations/shraga/)
+- [Dashboard](https://shraga-f03b21ad5239.herokuapp.com) (Google SSO, `masterschool.com` only)
+- Contact: or@masterschool.com
