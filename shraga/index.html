@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Shraga · Incident Commander</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%23282040'/><g transform='translate(76 256)' fill='none' stroke='%23a780ff' stroke-width='36' stroke-linecap='round' stroke-linejoin='round'><path d='M0 0 L72 0 L120 -110 L168 110 L216 -54 L264 60 L312 0 L360 0'/></g><circle cx='76' cy='256' r='18' fill='%23a780ff'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%2319191e'/><g fill='none' stroke='%23ee9d3e' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'><path d='M88 256 C 112 128, 144 384, 176 224 C 208 96, 240 416, 272 256 L 424 256'/></g><circle cx='424' cy='256' r='26' fill='%23f0c238'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,16 +22,17 @@
           viewBox="0 0 512 512"
           xmlns="http://www.w3.org/2000/svg"
           role="img"
-          aria-label="Shraga icon: a violet heartbeat line on a dark squircle"
+          aria-label="Shraga icon: a chaotic line on the left resolving into a clean line ending at a bright dot on the right — chaos in, clarity out"
         >
           <defs>
             <radialGradient id="hero-bg" cx="50%" cy="40%" r="70%">
-              <stop offset="0%" stop-color="oklch(0.26 0.04 282)" />
+              <stop offset="0%" stop-color="oklch(0.22 0.012 264)" />
               <stop offset="100%" stop-color="oklch(0.16 0.005 264)" />
             </radialGradient>
             <linearGradient id="hero-line" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stop-color="oklch(0.78 0.16 282)" />
-              <stop offset="100%" stop-color="oklch(0.74 0.18 282)" />
+              <stop offset="0%" stop-color="oklch(0.55 0.12 50)" />
+              <stop offset="55%" stop-color="oklch(0.78 0.15 50)" />
+              <stop offset="100%" stop-color="oklch(0.86 0.17 90)" />
             </linearGradient>
           </defs>
           <rect width="512" height="512" rx="112" fill="url(#hero-bg)" />
@@ -46,18 +47,15 @@
             stroke-width="2"
           />
           <g
-            transform="translate(76 256)"
             fill="none"
             stroke="url(#hero-line)"
-            stroke-width="18"
+            stroke-width="32"
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path
-              d="M0 0 L72 0 L120 -110 L168 110 L216 -54 L264 60 L312 0 L360 0"
-            />
+            <path d="M88 256 C 112 128, 144 384, 176 224 C 208 96, 240 416, 272 256 L 424 256" />
           </g>
-          <circle cx="76" cy="256" r="10" fill="oklch(0.78 0.16 282)" />
+          <circle cx="424" cy="256" r="24" fill="oklch(0.86 0.17 90)" />
         </svg>
         <h1>Shraga</h1>
         <p class="subtitle">

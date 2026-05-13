@@ -1,10 +1,10 @@
-/* Shraga keynote: editorial-engineering, dark, violet accent.
-   Mirrors the maestro-mcp deck's structure; swaps palette to Shraga's
-   identity (the EKG glyph's oklch violets over a deep neutral). */
+/* Shraga keynote: editorial-engineering, dark, amber accent.
+   Tangle → line glyph on cool slate, Masterschool-aligned warm accent
+   (chaos in, clarity out). */
 
 :root {
   --bg: oklch(0.16 0.005 264);
-  --bg-glow: oklch(0.26 0.04 282);
+  --bg-glow: oklch(0.26 0.06 50);
   --surface: oklch(0.21 0.012 270);
   --surface-2: oklch(0.245 0.018 274);
   --ink: oklch(0.94 0.005 264);
@@ -12,12 +12,12 @@
   --ink-faint: oklch(0.58 0.01 264);
   --rule: oklch(0.32 0.02 264);
   --rule-strong: oklch(0.46 0.025 268);
-  --accent: oklch(0.78 0.16 282);
-  --accent-soft: oklch(0.28 0.06 282);
-  --accent-ink: oklch(0.84 0.14 282);
+  --accent: oklch(0.78 0.15 50);
+  --accent-soft: oklch(0.30 0.08 50);
+  --accent-ink: oklch(0.84 0.15 55);
   --code-bg: oklch(0.22 0.015 268);
   --code-ink: oklch(0.88 0.01 264);
-  --callout-bg: oklch(0.24 0.04 282);
+  --callout-bg: oklch(0.24 0.06 50);
 
   --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
   --font-sans:
