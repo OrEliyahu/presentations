@@ -1,0 +1,527 @@
+/* Shraga keynote: editorial-engineering, dark, violet accent.
+   Mirrors the maestro-mcp deck's structure; swaps palette to Shraga's
+   identity (the EKG glyph's oklch violets over a deep neutral). */
+
+:root {
+  --bg: oklch(0.16 0.005 264);
+  --bg-glow: oklch(0.26 0.04 282);
+  --surface: oklch(0.21 0.012 270);
+  --surface-2: oklch(0.245 0.018 274);
+  --ink: oklch(0.94 0.005 264);
+  --ink-soft: oklch(0.75 0.008 264);
+  --ink-faint: oklch(0.58 0.01 264);
+  --rule: oklch(0.32 0.02 264);
+  --rule-strong: oklch(0.46 0.025 268);
+  --accent: oklch(0.78 0.16 282);
+  --accent-soft: oklch(0.28 0.06 282);
+  --accent-ink: oklch(0.84 0.14 282);
+  --code-bg: oklch(0.22 0.015 268);
+  --code-ink: oklch(0.88 0.01 264);
+  --callout-bg: oklch(0.24 0.04 282);
+
+  --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --measure: 68ch;
+  --gutter: clamp(1.5rem, 4vw, 4rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 17px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at top, var(--bg-glow) 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01', 'cv11', 'calt';
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main {
+  display: block;
+}
+
+/* ----- Slide as section ----- */
+
+.slide {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 7rem) var(--gutter);
+  position: relative;
+  border-bottom: 1px solid var(--rule);
+}
+
+.slide:last-of-type {
+  border-bottom: none;
+}
+
+.slide.wide {
+  max-width: clamp(36rem, 92vw, 60rem);
+}
+
+.slide::before {
+  content: '· ' attr(data-slide);
+  position: absolute;
+  top: clamp(2rem, 4vw, 3rem);
+  left: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .slide::before {
+    position: static;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .slide {
+    padding-top: clamp(2.5rem, 8vw, 4rem);
+  }
+}
+
+/* ----- Title slide ----- */
+
+#title {
+  min-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+#title .hero {
+  margin: 0 0 2.5rem;
+  width: clamp(12rem, 28vw, 18rem);
+  height: auto;
+  display: block;
+}
+
+#title h1 {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  margin: 0 0 1rem;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+#title .subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  color: var(--ink-soft);
+  margin: 0 0 2.5rem;
+  font-weight: 400;
+  max-width: 38ch;
+}
+
+#title .meta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+/* ----- Headings ----- */
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  margin: 0 0 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  margin: 2rem 0 0.75rem;
+  font-weight: 600;
+}
+
+/* ----- Lede + body text ----- */
+
+.lede {
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin: 0 0 2.5rem;
+  font-weight: 400;
+}
+
+p {
+  margin: 0 0 1.1rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+.footnote {
+  font-size: 0.875rem;
+  color: var(--ink-faint);
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+  margin-top: 2rem;
+}
+
+.presenter-note {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 0.6rem 0.9rem;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.15s ease;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--accent-ink);
+}
+
+/* Live demo illustration */
+.demo-illo {
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.demo-illo svg {
+  display: block;
+  width: 100%;
+  max-width: 44rem;
+  height: auto;
+}
+
+.callout {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--accent-ink);
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 1.5rem 0;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+/* ----- Lists ----- */
+
+ul,
+ol {
+  padding-left: 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+li::marker {
+  color: var(--ink-faint);
+}
+
+ol {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+}
+
+ol > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+ol > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+ol ul,
+ol ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ----- Two-column ----- */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  margin: 1rem 0 2rem;
+}
+
+.two-col .col {
+  border-top: 2px solid var(--accent);
+  padding-top: 1rem;
+}
+
+.two-col .col h3 {
+  margin-top: 0;
+}
+
+@media (max-width: 720px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----- Code ----- */
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 0.12em 0.35em;
+  border-radius: 2px;
+}
+
+pre {
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 1.25rem 1.5rem;
+  border-radius: 3px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  border: 1px solid var(--rule);
+  margin: 1.25rem 0;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ----- Tables ----- */
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  scrollbar-width: thin;
+}
+
+.table-scroll table {
+  margin: 0;
+  min-width: 32rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+th {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.5rem;
+}
+
+td code {
+  font-size: 0.82em;
+}
+
+/* ----- Phase flow diagram ----- */
+
+ol.phases {
+  counter-reset: none;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+ol.phases > li.phase {
+  counter-increment: none;
+  padding: 0.85rem 0.95rem;
+  margin: 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  border-radius: 3px;
+  display: grid;
+  gap: 0.2rem;
+  position: relative;
+}
+
+ol.phases > li.phase::before {
+  content: none;
+}
+
+.phase-num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.phase-label {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.phase-detail {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+/* ----- Triggers fan-in (slide 3) ----- */
+
+.fan-in {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.fan-in svg {
+  display: block;
+  width: 100%;
+  max-width: 38rem;
+  height: auto;
+}
+
+/* ----- Gate flow (slide 7) ----- */
+
+.gate {
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  background: var(--surface);
+  padding: 1.2rem 1.4rem;
+  margin: 1rem 0;
+}
+
+.gate.high {
+  border-left: 3px solid var(--accent);
+}
+
+.gate.low {
+  border-left: 3px solid var(--rule-strong);
+}
+
+.gate-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.4rem;
+}
+
+.gate-body {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.gate-body strong {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+em {
+  font-style: italic;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* Print */
+@media print {
+  body {
+    background: white;
+    color: black;
+    font-size: 11pt;
+  }
+  .slide {
+    page-break-after: always;
+    border-bottom: none;
+    min-height: auto;
+  }
+}

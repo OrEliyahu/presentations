@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shraga · Incident Commander</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <main>
+      <!-- Slide 1: Title -->
+      <section class="slide" id="title" data-slide="1">
+        <svg
+          class="hero"
+          viewBox="0 0 512 512"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="Shraga icon: a violet heartbeat line on a dark squircle"
+        >
+          <defs>
+            <radialGradient id="hero-bg" cx="50%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="oklch(0.26 0.04 282)" />
+              <stop offset="100%" stop-color="oklch(0.16 0.005 264)" />
+            </radialGradient>
+            <linearGradient id="hero-line" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="oklch(0.78 0.16 282)" />
+              <stop offset="100%" stop-color="oklch(0.74 0.18 282)" />
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" rx="112" fill="url(#hero-bg)" />
+          <rect
+            x="2"
+            y="2"
+            width="508"
+            height="508"
+            rx="110"
+            fill="none"
+            stroke="oklch(0.32 0.02 264)"
+            stroke-width="2"
+          />
+          <g
+            transform="translate(76 256)"
+            fill="none"
+            stroke="url(#hero-line)"
+            stroke-width="18"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M0 0 L72 0 L120 -110 L168 110 L216 -54 L264 60 L312 0 L360 0"
+            />
+          </g>
+          <circle cx="76" cy="256" r="10" fill="oklch(0.78 0.16 282)" />
+        </svg>
+        <h1>Shraga</h1>
+        <p class="subtitle">
+          The first ten minutes of every incident, automated. An autonomous commander that turns alerts into evidence-backed GitHub issues.
+        </p>
+        <p class="meta">Masterschool engineering · Hackathon 2026</p>
+      </section>
+
+      <!-- Slide 2: The problem -->
+      <section class="slide" id="problem" data-slide="2">
+        <h2>The first ten minutes</h2>
+        <p class="lede">
+          Today, every Sentry alert lands in a Slack channel. Whoever's around picks it up and burns ten minutes on mechanical work before any real thinking starts.
+        </p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>What an engineer does</h3>
+            <ol>
+              <li>Open Sentry. Read the stack trace.</li>
+              <li>Jump to Coralogix. Filter by service, time, level.</li>
+              <li>Open GitHub. Blame the suspect line.</li>
+              <li>Check recent commits in the file.</li>
+              <li>Write findings into a Slack thread.</li>
+            </ol>
+          </div>
+          <div class="col">
+            <h3>What it costs</h3>
+            <p>
+              <strong>Six tabs, ~10 minutes</strong> per incident, before a single product question gets answered.
+            </p>
+            <p>
+              Multiply by every alert, every night, every engineer. The expensive part isn't the fix — it's the warm-up.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: What Shraga is -->
+      <section class="slide" id="what" data-slide="3">
+        <h2>What Shraga is</h2>
+        <p class="lede">
+          An autonomous incident commander. Watches the alerts, runs the warm-up, hands you back an issue that's already half-solved.
+        </p>
+
+        <p>
+          Three trigger surfaces fan into one investigation pipeline:
+        </p>
+
+        <div class="fan-in">
+          <svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three live trigger sources fanning into Shraga, plus one roadmap source">
+            <defs>
+              <style>
+                .fan-in svg .src {
+                  fill: var(--surface);
+                  stroke: var(--rule-strong);
+                  stroke-width: 0.75;
+                }
+                .fan-in svg .src-roadmap {
+                  fill: transparent;
+                  stroke: var(--rule);
+                  stroke-width: 0.75;
+                  stroke-dasharray: 3 3;
+                }
+                .fan-in svg .wire {
+                  fill: none;
+                  stroke: var(--rule-strong);
+                  stroke-width: 0.75;
+                  stroke-dasharray: 1 3;
+                }
+                .fan-in svg .core {
+                  fill: var(--accent-soft);
+                  stroke: var(--accent);
+                  stroke-width: 1;
+                }
+                .fan-in svg .lbl {
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  fill: var(--ink-soft);
+                  text-transform: uppercase;
+                }
+                .fan-in svg .lbl-roadmap {
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  fill: var(--ink-faint);
+                  text-transform: uppercase;
+                }
+                .fan-in svg .lbl-accent {
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  letter-spacing: 0.1em;
+                  fill: var(--accent-ink);
+                  text-transform: uppercase;
+                }
+              </style>
+            </defs>
+
+            <g transform="translate(20,20)">
+              <rect class="src" width="140" height="26" rx="3" />
+              <text class="lbl" x="10" y="17">Sentry webhook</text>
+            </g>
+            <g transform="translate(20,60)">
+              <rect class="src" width="140" height="26" rx="3" />
+              <text class="lbl" x="10" y="17">Coralogix alert</text>
+            </g>
+            <g transform="translate(20,100)">
+              <rect class="src" width="140" height="26" rx="3" />
+              <text class="lbl" x="10" y="17">Dashboard paste</text>
+            </g>
+            <g transform="translate(20,140)">
+              <rect class="src-roadmap" width="140" height="26" rx="3" />
+              <text class="lbl-roadmap" x="10" y="17">Slack @mention</text>
+            </g>
+
+            <path class="wire" d="M 160 33 C 280 33, 340 85, 420 90" />
+            <path class="wire" d="M 160 73 C 280 73, 340 88, 420 90" />
+            <path class="wire" d="M 160 113 C 280 113, 340 92, 420 90" />
+            <path class="wire" d="M 160 153 C 280 153, 340 95, 420 90" stroke-dasharray="2 4" opacity="0.5" />
+
+            <g transform="translate(420,60)">
+              <rect class="core" width="160" height="60" rx="4" />
+              <text class="lbl-accent" x="14" y="24">SHRAGA</text>
+              <text class="lbl" x="14" y="44">agent · tool loop</text>
+            </g>
+          </svg>
+        </div>
+
+        <p class="footnote">
+          Three sources live today. Slack @mention ships in the next 24 hours, pending workspace approval.
+        </p>
+      </section>
+
+      <!-- Slide 4: Live demo -->
+      <section class="slide" id="demo" data-slide="4">
+        <h2>Live</h2>
+        <p class="lede">
+          Real Sentry alert → real investigation → real GitHub issue. Every phase streams to a Google-SSO'd dashboard so the audience sees the agent think.
+        </p>
+
+        <figure
+          class="demo-illo"
+          aria-label="Sentry alert on the left, Shraga's tool loop on the right, connected by a live wire with a traveling pulse."
+        >
+          <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" role="img">
+            <defs>
+              <style>
+                .demo-illo svg .panel {
+                  fill: var(--surface);
+                  stroke: var(--rule-strong);
+                  stroke-width: 1;
+                }
+                .demo-illo svg .divider {
+                  stroke: var(--rule);
+                  stroke-width: 0.75;
+                }
+                .demo-illo svg .row {
+                  fill: var(--surface-2);
+                }
+                .demo-illo svg .row-strong {
+                  fill: var(--surface);
+                  stroke: var(--rule-strong);
+                  stroke-width: 0.5;
+                }
+                .demo-illo svg .tool-call {
+                  fill: var(--accent-soft);
+                  stroke: var(--accent);
+                  stroke-width: 0.75;
+                }
+                .demo-illo svg .label {
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  letter-spacing: 0.14em;
+                  fill: var(--ink-soft);
+                  text-transform: uppercase;
+                }
+                .demo-illo svg .label-faint {
+                  font-family: var(--font-mono);
+                  font-size: 8.5px;
+                  letter-spacing: 0.1em;
+                  fill: var(--ink-faint);
+                }
+                .demo-illo svg .label-accent {
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  letter-spacing: 0.14em;
+                  fill: var(--accent-ink);
+                  text-transform: uppercase;
+                }
+                .demo-illo svg .quote {
+                  font-family: var(--font-serif);
+                  font-style: italic;
+                  font-size: 14px;
+                  fill: var(--ink);
+                }
+                .demo-illo svg .wire {
+                  fill: none;
+                  stroke: var(--accent);
+                  stroke-width: 1;
+                  stroke-dasharray: 1 4;
+                  stroke-linecap: round;
+                  opacity: 0.8;
+                }
+                .demo-illo svg .pulse {
+                  fill: var(--accent);
+                }
+                @keyframes demo-blink {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.25; }
+                }
+                .demo-illo svg .blink {
+                  animation: demo-blink 1.6s ease-in-out infinite;
+                  transform-origin: center;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                  .demo-illo svg .blink { animation: none; }
+                  .demo-illo svg .pulse-motion { display: none; }
+                }
+              </style>
+            </defs>
+
+            <!-- LEFT: Sentry alert -->
+            <g transform="translate(28,40)">
+              <rect class="panel" width="240" height="160" rx="3" />
+              <text class="label" x="14" y="22">SENTRY · AI_TUTOR_BACKEND</text>
+              <line class="divider" x1="14" y1="32" x2="226" y2="32" />
+              <text class="quote" x="14" y="60">"TypeError: undefined.id"</text>
+              <rect class="row" x="14" y="80" width="160" height="6" rx="1" />
+              <rect class="row" x="14" y="94" width="200" height="6" rx="1" />
+              <rect class="row" x="14" y="108" width="120" height="6" rx="1" />
+              <rect class="tool-call" x="14" y="124" width="180" height="22" rx="2" />
+              <text class="label-accent" x="22" y="139">→ POST /webhook/sentry</text>
+            </g>
+
+            <!-- RIGHT: Shraga -->
+            <g transform="translate(372,40)">
+              <rect class="panel" width="240" height="160" rx="3" />
+              <text class="label" x="14" y="22">SHRAGA · TOOL LOOP</text>
+              <line class="divider" x1="14" y1="32" x2="226" y2="32" />
+              <text class="label-faint" x="14" y="50">phases stream live</text>
+
+              <g transform="translate(14,62)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">sentry_get_event</text>
+              </g>
+              <g transform="translate(14,86)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">coralogix_cx</text>
+              </g>
+              <g transform="translate(14,110)">
+                <rect class="row-strong" width="212" height="18" rx="2" />
+                <text class="label" x="10" y="13">github_blame</text>
+              </g>
+              <g transform="translate(14,134)">
+                <rect class="tool-call" width="212" height="18" rx="2" />
+                <text class="label-accent" x="10" y="13">github_create_issue</text>
+              </g>
+            </g>
+
+            <path
+              id="demo-wire"
+              class="wire"
+              d="M 268 120 C 304 60, 336 60, 372 120"
+            />
+
+            <g class="pulse-motion">
+              <circle class="pulse" r="3.5">
+                <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
+                  <mpath href="#demo-wire" />
+                </animateMotion>
+              </circle>
+            </g>
+
+            <g transform="translate(298,30)">
+              <circle class="pulse blink" cx="0" cy="-3" r="3.5" />
+              <text class="label-accent" x="10" y="0">LIVE</text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <!-- Slide 5: The loop -->
+      <section class="slide wide" id="loop" data-slide="5">
+        <h2>The investigation loop</h2>
+        <p class="lede">
+          Six phases. The agent commits to a plain-English story before it acts.
+        </p>
+
+        <ol class="phases">
+          <li class="phase">
+            <span class="phase-num">01</span>
+            <span class="phase-label">Triage</span>
+            <span class="phase-detail">Read the alert. Compute the dedup label. Check if Shraga already filed an issue.</span>
+          </li>
+          <li class="phase">
+            <span class="phase-num">02</span>
+            <span class="phase-label">Investigate</span>
+            <span class="phase-detail">Pull Sentry events, Coralogix logs, recent commits, blame suspect lines.</span>
+          </li>
+          <li class="phase">
+            <span class="phase-num">03</span>
+            <span class="phase-label">Probe</span>
+            <span class="phase-detail">Verify or falsify each suspect against reality (probe tools wiring in next phase).</span>
+          </li>
+          <li class="phase">
+            <span class="phase-num">04</span>
+            <span class="phase-label">Hypothesize</span>
+            <span class="phase-detail">Commit to a single root-cause story in plain English. State confidence as a percentage.</span>
+          </li>
+          <li class="phase">
+            <span class="phase-num">05</span>
+            <span class="phase-label">Draft fix</span>
+            <span class="phase-detail">Sketch the smallest possible fix. No writes. Decide whether to delegate to Claude Code.</span>
+          </li>
+          <li class="phase">
+            <span class="phase-num">06</span>
+            <span class="phase-label">File</span>
+            <span class="phase-detail">New issue OR comment on the existing one. <em>Never opens a PR directly.</em></span>
+          </li>
+        </ol>
+
+        <p class="footnote">
+          <strong>Phase 4 is the agentic-discipline beat.</strong> Forcing a plain-English root cause with a numeric confidence — before any write — is what separates investigation from hallucination.
+        </p>
+      </section>
+
+      <!-- Slide 6: Toolbelt -->
+      <section class="slide" id="tools" data-slide="6">
+        <h2>The toolbelt</h2>
+        <p class="lede">
+          Read-only by default. One write surface: GitHub issues. No PRs, no DB writes, no prod calls.
+        </p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Read (live)</h3>
+            <ul>
+              <li><code>sentry_get_issue</code> · <code>sentry_get_event</code> · <code>sentry_list_events_for_issue</code></li>
+              <li><code>coralogix_cx</code> — shells out to the <code>cx</code> CLI</li>
+              <li><code>github_read_file</code> · <code>github_blame</code> · <code>github_search_code</code> · <code>github_get_recent_commits</code> · <code>github_get_pr</code></li>
+              <li><code>github_find_open_issue_by_label</code> — the dedup primitive</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Write (live)</h3>
+            <ul>
+              <li><code>github_create_issue</code> — requires a <code>dedup_label</code> at the tool boundary</li>
+              <li><code>github_comment_on_issue</code> — used on repeat firings</li>
+            </ul>
+            <h3>Roadmap</h3>
+            <ul>
+              <li><code>probe_mongo_find</code> · <code>probe_flag_status</code> · <code>probe_http_get</code> — wiring next, behind a strict staging allowlist</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: Gate + dedup -->
+      <section class="slide" id="gate" data-slide="7">
+        <h2>The discipline</h2>
+        <p class="lede">
+          Two design choices that make Shraga more than a wrapper.
+        </p>
+
+        <h3>1. The PR/Issue gate — the agent knows what it doesn't know</h3>
+
+        <div class="gate high">
+          <p class="gate-label">High confidence · low risk</p>
+          <p class="gate-body">
+            ≤ 3 files · ≤ 30 lines · no protected paths · ≥ 99% confidence · no new deps · no renamed exports
+            <br />
+            <strong>→ files issue tagged <code>@claude /remote-issue-implementation</code></strong>. Claude Code picks it up and opens the PR. A human still merges.
+          </p>
+        </div>
+
+        <div class="gate low">
+          <p class="gate-label">Anything else</p>
+          <p class="gate-body">
+            <strong>→ plain issue with a <code>## Suggested approach</code> section</strong>. Humans take it from there. Same artifact shape, no auto-tag.
+          </p>
+        </div>
+
+        <h3>2. Dedup as a feature, not a guard</h3>
+
+        <p>
+          Every trigger produces a deterministic dedup key — e.g. <code>shraga-sentry-6937875213</code>. Before opening anything, Shraga looks up that label on GitHub.
+        </p>
+
+        <p>
+          A repeat Sentry firing <strong>comments on the existing issue with new evidence</strong> — new event count, new timestamps, new context — instead of spawning a duplicate.
+        </p>
+
+        <p class="callout">
+          Wrappers spawn duplicates. Shraga accrues evidence.
+        </p>
+      </section>
+
+      <!-- Slide 8: 10× -->
+      <section class="slide" id="impact" data-slide="8">
+        <h2>What 10× actually means here</h2>
+        <p class="lede">
+          Three measurable axes, not vibes.
+        </p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Time</h3>
+            <p>
+              <strong>~10 min</strong> of mechanical engineer warm-up
+              <br />
+              <strong>→ ~90 s</strong> of agent investigation
+            </p>
+            <p class="footnote">Stack trace fetched, logs queried, suspect lines blamed, evidence linked — autonomously.</p>
+          </div>
+          <div class="col">
+            <h3>Cognitive load</h3>
+            <p>
+              <strong>6 tabs</strong> — Sentry, Coralogix, GitHub blame, GitHub commits, Slack thread, codebase
+              <br />
+              <strong>→ 1 GitHub issue</strong> with linked evidence + a concrete suggested fix
+            </p>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Coverage</h3>
+            <p>
+              Humans skim only the loudest alerts.
+              <strong>Shraga triages 100%</strong> — and dedup means the noise doesn't grow.
+            </p>
+          </div>
+          <div class="col">
+            <h3>Composition</h3>
+            <p>
+              Shraga → Claude Code → human. Two agents in a pipeline, with the human as the final approver. <strong>Same shape generalizes</strong> to any on-call task that's currently a Slack thread.
+            </p>
+          </div>
+        </div>
+
+        <p class="meta">
+          Shraga · Hackathon 2026 · or@masterschool.com
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
