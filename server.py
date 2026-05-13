@@ -137,6 +137,7 @@ def render_index(presentations: list[tuple[str, str]]) -> bytes:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Presentations</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect x='4' y='4' width='56' height='56' rx='12' fill='%23181b22' stroke='%23232732' stroke-width='2'/><rect x='14' y='18' width='36' height='22' rx='3' fill='none' stroke='%238a8f9c' stroke-width='2.5'/><rect x='20' y='28' width='36' height='22' rx='3' fill='%23181b22' stroke='%23e7e9ee' stroke-width='2.5'/></svg>" />
     <style>
       :root {{ color-scheme: light dark; }}
       * {{ box-sizing: border-box; }}
