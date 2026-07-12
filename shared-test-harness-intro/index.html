@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>One App to Test Them All · Ai-Tutor test harness</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%2319191e'/><path d='M120 268 L 216 364 L 400 160' fill='none' stroke='%2355d68f' stroke-width='44' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <main>
+      <!-- Slide 1: Title -->
+      <section class="slide" id="title" data-slide="1">
+        <svg
+          class="hero"
+          viewBox="0 0 512 512"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="Deck icon: a row of faded broken stubs on the left resolving into one bold green check on the right — fake green out, real green in"
+        >
+          <defs>
+            <radialGradient id="hero-bg" cx="50%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="oklch(0.22 0.012 264)" />
+              <stop offset="100%" stop-color="oklch(0.16 0.005 264)" />
+            </radialGradient>
+            <linearGradient id="hero-check" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="oklch(0.62 0.11 160)" />
+              <stop offset="100%" stop-color="oklch(0.84 0.14 152)" />
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" rx="112" fill="url(#hero-bg)" />
+          <rect
+            x="2"
+            y="2"
+            width="508"
+            height="508"
+            rx="110"
+            fill="none"
+            stroke="oklch(0.32 0.02 264)"
+            stroke-width="2"
+          />
+          <!-- faded stub crosses: green tests that lied -->
+          <g
+            fill="none"
+            stroke="oklch(0.55 0.1 25)"
+            stroke-width="16"
+            stroke-linecap="round"
+            opacity="0.55"
+          >
+            <path d="M96 128 l 40 40 M136 128 l -40 40" />
+            <path d="M96 236 l 40 40 M136 236 l -40 40" stroke-dasharray="6 10" opacity="0.7" />
+            <path d="M96 344 l 40 40 M136 344 l -40 40" stroke-dasharray="4 14" opacity="0.4" />
+          </g>
+          <!-- the one real check -->
+          <path
+            d="M208 276 L 288 356 L 428 168"
+            fill="none"
+            stroke="url(#hero-check)"
+            stroke-width="36"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <h1>One App to Test Them All</h1>
+        <p class="subtitle">
+          The Ai-Tutor backend test refactor — what tests are, why ours hurt, the shared harness that fixes it, and your part in the migration.
+        </p>
+        <p class="meta">Fellowship onboarding · presented by Or · July 2026</p>
+      </section>
+
+      <!-- Slide 2: What are tests -->
+      <section class="slide" id="what-are-tests" data-slide="2">
+        <h2><span class="kicker">Chapter 1 · What are tests</span>A robot that re-checks your work</h2>
+        <p class="lede">
+          A smoke detector doesn't stop fires. It tells you the moment one starts — before the house burns down.
+        </p>
+
+        <p>
+          A test is a small program that runs part of our app and checks the result. When someone breaks something, a test turns red <strong>before users notice</strong>. We have hundreds; they all run automatically on every change. Why bother:
+        </p>
+
+        <ul>
+          <li><strong>Change without fear.</strong> Rewrite code and know in minutes whether you broke a promise the old code kept.</li>
+          <li><strong>Executable documentation.</strong> A test says "when X happens, the system does Y" — and proves it on every run. Docs go stale; tests can't.</li>
+          <li><strong>Catch regressions.</strong> A <em>regression</em> is an old feature that a new change silently broke. Tests catch it before users do.</li>
+        </ul>
+
+        <h3>Anatomy of one test: setup → act → assert</h3>
+        <p>Build the world, do the one thing, check the outcome. Real code from our repo:</p>
+
+<pre><code>it('derives withdrawn status for a registration with a Z grade letter', async () =&gt; {
+  <span class="cm">// setup: put one registration in the database</span>
+  await seedRegistration(studentId, {
+    termNumber: 2,
+    grade: { letter: 'Z', numerical: null, updatedAt: new Date() },
+  });
+
+  <span class="cm">// act: call the endpoint like a real admin would</span>
+  const { body } = await driver.request().get(path())
+    .set('Authorization', driver.auth(viewAdmin)).expect(200);
+
+  <span class="cm">// assert: check the answer</span>
+  expect(body.registrations[0].status).toBe('withdrawn');
+});</code></pre>
+      </section>
+
+      <!-- Slide 3: Unit vs integration -->
+      <section class="slide" id="two-kinds" data-slide="3">
+        <h2><span class="kicker">Chapter 2 · Two kinds of tests</span>The bench and the test drive</h2>
+        <p class="lede">
+          Unit test: take one engine part out of the car and spin it on the bench. Integration test: put the parts together and drive around the block.
+        </p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>Unit — the part on the bench</h3>
+            <p>
+              One piece of logic <strong>in isolation</strong>: a grade formula, a date calculator. Milliseconds fast, no database, no network.
+            </p>
+            <p>
+              But it can't tell you the car drives. The part may be perfect and the car still won't start.
+            </p>
+          </div>
+          <div class="col">
+            <h3>Integration — the test drive</h3>
+            <p>
+              The <strong>real pieces wired together</strong>: real endpoint, real logic, real database. Slower, but it fails the way production would fail.
+            </p>
+            <p>
+              One integration test can cover what ten unit tests only hint at.
+            </p>
+          </div>
+        </div>
+
+        <h3>Our philosophy</h3>
+        <p>
+          Write every test at the <strong>highest realistic level</strong> — the default is integration. A <em>mock</em> (a stand-in fake object) is the <strong>last resort</strong>, allowed only for external services that truly cannot run in a test.
+        </p>
+
+        <p class="callout">
+          A stub that drifts from real behavior makes a green test lie.
+        </p>
+
+        <p class="footnote">
+          This rule lives in the repo's <code>/write-tests</code> skill. It is the single most important idea in this deck.
+        </p>
+      </section>
+
+      <!-- Slide 4: The boot problem -->
+      <section class="slide" id="problem-boot" data-slide="4">
+        <h2><span class="kicker">Chapter 3 · The NestJS + Jest problem</span>Every file opens its own restaurant</h2>
+        <p class="lede">
+          Booting our NestJS backend is like opening a restaurant: hire staff, stock the kitchen, unlock the doors. Our old specs did that per file — to serve one table.
+        </p>
+
+        <div class="two-col">
+          <div class="col bad">
+            <h3>What each spec file pays</h3>
+            <ul>
+              <li>Boots <strong>its own NestJS app</strong> (a <code>TestingModule</code>).</li>
+              <li><strong>And</strong> clones a fresh migrated MongoDB database.</li>
+            </ul>
+          </div>
+          <div class="col bad">
+            <h3>Why Jest makes it worse</h3>
+            <ul>
+              <li>Jest — our test runner — runs each file in a <strong>separate worker process</strong>. Workers share nothing.</li>
+              <li>So the boot cost is paid <strong>again for every file</strong>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <p>
+          Hundreds of files, one app boot and one DB clone each — a <strong>slow suite</strong>. Slow tests get skipped, and skipped tests catch nothing.
+        </p>
+      </section>
+
+      <!-- Slide 5: The stub trap -->
+      <section class="slide" id="problem-stubs" data-slide="5">
+        <h2><span class="kicker">Chapter 3 · The NestJS + Jest problem</span>The coping trick: stubs</h2>
+        <p class="lede">
+          To keep each per-file app small and quick to boot, people replaced real logic with stubs — hand-written stand-ins.
+        </p>
+
+        <p>Real code from the old admin spec:</p>
+
+<pre><code>@QueryHandler(GetUserQuery)
+class FakeGetUserQueryHandler implements IQueryHandler&lt;GetUserQuery&gt; {
+  constructor(private readonly dbService: DBService) {}
+
+  execute(query: GetUserQuery) {
+    return this.dbService
+      .collection&lt;UserDao&gt;('users')
+      .findOne({ _id: new ObjectId(query.userId) });
+  }
+}</code></pre>
+
+        <p>
+          Looks harmless. It is a hand-copied <strong>guess</strong> at what the real handler does. Then the real handler changes — and the stub doesn't. The test keeps checking the stub and stays <strong>green while the real path is broken</strong>. A handler refactor can break production while the stubbed test passes for the wrong reason.
+        </p>
+
+        <p class="footnote">
+          <strong>Slow</strong> and <strong>less reliable</strong> — the two problems named in the driver README. Both share one root: every file builds its own private world.
+        </p>
+      </section>
+
+      <!-- Slide 6: The before -->
+      <section class="slide" id="before" data-slide="6">
+        <h2><span class="kicker">Chapter 3 · The NestJS + Jest problem</span>A real "before"</h2>
+        <p class="lede">
+          <code>test/admin/admin.controller.api.service.spec.ts</code> on <code>develop</code>: ~3,000 lines, 11 top-level describe blocks — each booting its own module with its own stub handlers.
+        </p>
+
+<pre><code>module = await Test.createTestingModule({
+  imports: [ConfigModule.forRoot(...), DBModule, CqrsModule.forRoot({})],
+  controllers: [AdminController],
+  providers: [
+    AdminControllerApiService,
+    FakeGetUserByEmailQueryHandler,                  <span class="cm">// stub</span>
+    FakeAdminSetUserAbTestExperimentCommandHandler,  <span class="cm">// stub</span>
+    { provide: AdminService, useValue: {} },         <span class="cm">// empty fake</span>
+  ],
+}).overrideGuard(JwtGuard).useClass(TestJwtGuard).compile();</code></pre>
+
+        <p>
+          Even the login guard is replaced. Almost nothing in this test is the real thing.
+        </p>
+      </section>
+
+      <!-- Slide 7: The vision -->
+      <section class="slide wide" id="vision" data-slide="7">
+        <h2><span class="kicker">Chapter 4 · Our integration-test vision</span>Boot once, use everywhere</h2>
+        <p class="lede">
+          One shared, real Nest app boots once per test run — in Jest's <code>globalSetup</code> — and listens on a local port. Specs don't boot anything. They seed data and make HTTP calls. The restaurant opens once in the morning; every test is just another customer.
+        </p>
+
+        <ol class="path">
+          <li class="hop">
+            <span class="hop-num">Spec</span>
+            <span class="hop-label">Test file</span>
+            <span class="hop-detail">Seeds its own rows, then calls the app.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">HTTP</span>
+            <span class="hop-detail">A genuine network request to the shared port.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">JWT guard</span>
+            <span class="hop-detail">The test signs a real token with the app's secret. No guard overrides.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">Controller</span>
+            <span class="hop-detail">The production route, validation included.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">CQRS handler</span>
+            <span class="hop-detail">No stubs. The code production runs.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">MongoDB</span>
+            <span class="hop-detail">Real reads, real writes, real indexes.</span>
+          </li>
+        </ol>
+
+        <p class="footnote">
+          When the real path throws, the usual cause is <strong>missing seeded state</strong> — so seed the state, don't fake the step.
+        </p>
+      </section>
+
+      <!-- Slide 8: Seams + isolation -->
+      <section class="slide" id="seams" data-slide="8">
+        <h2><span class="kicker">Chapter 4 · Our integration-test vision</span>Seams, and cleanup without teardown</h2>
+        <p class="lede">
+          Two ideas make one shared app workable: fake only at the seams, and clean only what you created.
+        </p>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>The seam — the shirt analogy</h3>
+            <p>
+              A <strong>seam</strong> is the exact line where one piece of fabric is stitched to another. Our code has seams too: where it stitches onto an external service — Segment analytics, RabbitMQ.
+            </p>
+            <p>
+              Those can't run in a test. We cut the stitch <strong>exactly there</strong> and sew in a fake that <strong>captures</strong> what would have been sent. Everything inside the shirt stays real.
+            </p>
+          </div>
+          <div class="col">
+            <h3>Isolation — the shared kitchen</h3>
+            <p>
+              The shared DB is <strong>never wiped</strong> — wiping would destroy other tests' data mid-run. Instead, every spec seeds <strong>fresh unique ids</strong> (<code>ObjectId</code>s), reads only its own, and <strong>cleans up exactly what it created</strong>.
+            </p>
+            <p>
+              No one bleaches the whole kitchen; everyone washes their own pots.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 9: The harness map + ApiDriver -->
+      <section class="slide" id="map" data-slide="9">
+        <h2><span class="kicker">Chapter 5 · The core pieces</span>The harness: <code>test/api/driver/</code></h2>
+        <p class="lede">
+          Seven small files. You will touch the first two daily; the rest work for you in the background.
+        </p>
+
+        <ul>
+          <li><code>api.driver.ts</code> — <strong>ApiDriver</strong>, the stable core: HTTP, auth, DB, seeding.</li>
+          <li><code>use.api.driver.ts</code> — <strong>useApiDriver()</strong>, wires the driver into the test lifecycle.</li>
+          <li><code>test.scope.ts</code> — <strong>TestScope</strong>, the cleanup ledger.</li>
+          <li><code>scoped.collection.ts</code> — inserts that clean themselves up.</li>
+          <li><code>claimed.namespaces.ts</code> — who owns shared values (cohorts).</li>
+          <li><code>interfaces.ts</code> — the contracts; the one door in for seam types.</li>
+          <li><code>seams/ · test-hooks/ · clients/</code> — one folder per faked boundary.</li>
+        </ul>
+
+        <h3>ApiDriver — your remote control</h3>
+
+<pre><code>class ApiDriver {
+  request()                  <span class="cm">// supertest against the shared app</span>
+  auth(user)                 <span class="cm">// mint a REAL signed JWT for this user</span>
+  db                         <span class="cm">// the shared Mongo connection</span>
+  collection&lt;T&gt;(name)        <span class="cm">// auto-owning collection wrapper</span>
+  seedUser(configure?)       <span class="cm">// insert a user via the UserBuilder</span>
+  seedAdmin()                <span class="cm">// a user with admin permissions</span>
+  seedCalendar(dao)          <span class="cm">// cohort calendar, via the claim registry</span>
+  uniqueEmail() / uniqueKey(prefix)  <span class="cm">// collision-free values</span>
+}</code></pre>
+
+        <p class="footnote">
+          Small on purpose. Domain helpers compose <em>around</em> it — they don't pile onto it.
+        </p>
+      </section>
+
+      <!-- Slide 10: Lifecycle + scope -->
+      <section class="slide" id="lifecycle" data-slide="10">
+        <h2><span class="kicker">Chapter 5 · The core pieces</span>Wiring you can't get wrong</h2>
+        <p class="lede">
+          useApiDriver() hooks the driver into Jest's lifecycle so cleanup always happens. This is the whole file:
+        </p>
+
+<pre><code>export function useApiDriver(): ApiDriver {
+  const driver = new ApiDriver();
+
+  beforeAll(() =&gt; driver.connect());
+  beforeEach(() =&gt; driver.scope.checkpoint());
+  afterEach(() =&gt; driver.cleanupSinceCheckpoint());
+  afterAll(async () =&gt; {
+    await driver.cleanupScope();
+    await driver.close();
+  });
+
+  return driver;
+}</code></pre>
+
+        <h3>TestScope — the receipt ledger</h3>
+        <p>
+          Every seed writes a <strong>delete-receipt</strong>; cleanup cashes in the receipts — yours only.
+        </p>
+
+<pre><code>scope.ownId('users', id)                    <span class="cm">// receipt: delete this _id</span>
+scope.ownBy('email_records', { userId })    <span class="cm">// receipt: delete by filter</span>
+scope.ownCustom(label, run)                 <span class="cm">// receipt: run this cleanup step</span>
+scope.checkpoint()                          <span class="cm">// draw a line in the ledger</span></code></pre>
+
+        <p>
+          The <strong>checkpoint</strong> separates file fixtures from per-test data: receipts written before it (in <code>beforeAll</code>) survive the whole file; receipts written after it are cleaned after each test.
+        </p>
+
+        <p class="footnote">
+          <strong>Rule:</strong> call <code>useApiDriver()</code> as the <strong>first statement</strong> in the <code>describe</code>. Jest runs hooks in order — the driver's checkpoint must register before any of your own <code>beforeEach</code> seeding.
+        </p>
+      </section>
+
+      <!-- Slide 11: Ownership -->
+      <section class="slide" id="ownership" data-slide="11">
+        <h2><span class="kicker">Chapter 5 · The core pieces</span>Seeding that can't leak or collide</h2>
+        <p class="lede">
+          Two guards keep hundreds of specs safe on one database.
+        </p>
+
+        <h3>ScopedCollection — inserts that own themselves</h3>
+        <p>The default seeding path. Every insert registers its own receipt:</p>
+
+<pre><code>async insertOne(doc): Promise&lt;InsertOneResult&lt;T&gt;&gt; {
+  const result = await this.inner.insertOne(doc);
+  this.scope.ownId(this.inner.collectionName, result.insertedId);
+  return result;
+}</code></pre>
+
+        <p>
+          <code>raw()</code> is the escape hatch for Mongo APIs it doesn't wrap — a raw insert must be paired with a manual <code>scope.own*</code> receipt.
+        </p>
+
+        <h3>The claim registry — bounded values</h3>
+        <p>
+          Fresh ids can't collide, but some values come from a <strong>small fixed set</strong> — like cohorts. Two specs will eventually pick the same one and flake only when run together. The registry names an owner per value, and <code>seedCalendar</code> checks it <strong>before inserting</strong>:
+        </p>
+
+<pre><code>export const COHORT_CALENDAR_OWNERS = {
+  [CohortTermDescriptor.SEPTEMBER_2025]:
+    'course.registration.admin.controller.spec.ts',
+  ...
+};
+<span class="cm">// inside driver.seedCalendar():</span>
+assertClaim(COHORT_CALENDAR_OWNERS, dao.cohort, 'cohort calendar');</code></pre>
+
+        <p>
+          A second claimer fails <strong>at seed time, with the owner's name</strong> — not weeks later as a mystery flake. And absence is a claim too: "this cohort has <em>no</em> calendar" must also be registered.
+        </p>
+      </section>
+
+      <!-- Slide 12: Seam folders + canonical example -->
+      <section class="slide" id="canonical" data-slide="12">
+        <h2><span class="kicker">Chapter 5 · The core pieces</span>Faked boundaries, and the spec to copy</h2>
+        <p class="lede">
+          One folder trio per faked boundary. Today: analytics (Segment) and the task transport (RabbitMQ).
+        </p>
+
+        <ul>
+          <li><strong><code>seams/</code></strong> — the swap: replace the network client with a recorder.</li>
+          <li><strong><code>test-hooks/</code></strong> — test-only HTTP routes to read the captures back.</li>
+          <li><strong><code>clients/</code></strong> — the spec-side wrapper: <code>driver.analytics.waitForEvent(...)</code>.</li>
+        </ul>
+
+        <h3>The canonical spec — copy this shape</h3>
+        <p><code>test/admin/course.registration.admin.controller.spec.ts</code>:</p>
+
+<pre><code>describe('Course registration admin', () =&gt; {
+  const driver = useApiDriver();          <span class="cm">// first statement — always</span>
+
+  beforeAll(async () =&gt; {                 <span class="cm">// file fixture: claimed cohort</span>
+    await driver.seedCalendar(buildCalendarDao(STATUS_COHORT, [...]));
+  });
+
+  beforeEach(async () =&gt; {                <span class="cm">// per-test: fresh admin</span>
+    viewAdmin = await driver.seedUser((user) =&gt;
+      user.withPermissions([{ title: 'course-registration-view' }]));
+  });
+
+  it('rejects a caller without the view permission', async () =&gt; {
+    await driver.request().get(path())
+      .set('Authorization', driver.auth(noPermsUser)).expect(403);
+  });
+});</code></pre>
+
+        <p class="footnote">
+          Real JWT auth, claimed calendar seeding, per-test admins, assertions on the HTTP response, the DB, and captured analytics. Every new spec starts from this file.
+        </p>
+      </section>
+
+      <!-- Slide 13: The task workflow -->
+      <section class="slide" id="task" data-slide="13">
+        <h2><span class="kicker">Chapter 6 · Your task</span>How the work flows</h2>
+        <p class="lede">
+          All conversion work runs through the code factory. You don't write the conversion by hand — you own its quality.
+        </p>
+
+        <ol>
+          <li>An <strong>agent converts</strong> the spec to the shared driver.</li>
+          <li><strong>You</strong> read the engineering plan, <strong>review</strong> what the agent did, let it rebase if needed, and <strong>approve</strong>.</li>
+          <li><strong>Or merges.</strong></li>
+        </ol>
+
+        <div class="piece">
+          <p class="piece-label">Ground rules</p>
+          <p class="piece-body">
+            One spec (or one slice) per PR, converted <strong>in place</strong> — the file doesn't move. A new seam lands <strong>in the same PR as its first consumer</strong>, never speculatively.
+          </p>
+        </div>
+
+        <p>
+          The work splits into two parallel tracks — one fellow each. Both start with warm-ups and end with a capstone that leaves a new harness piece behind for everyone after you.
+        </p>
+      </section>
+
+      <!-- Slide 14: Track A -->
+      <section class="slide wide" id="track-a" data-slide="14">
+        <h2><span class="kicker">Chapter 6 · Your task</span>Track A — storage, queues, machinery</h2>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Specs</th>
+                <th>Harness pieces it creates</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1 · Warm-up</strong></td>
+                <td><code>get.student.grades.view</code>, <code>get.agent.memory.files</code></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><strong>2 · Simple reads</strong></td>
+                <td><code>get.student.financial.aid</code>, <code>admin.loa.requests</code></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><strong>3 · S3</strong></td>
+                <td><code>get.user.non.verification.documents.and.contracts</code>, then <code>get.user.lifecycle.documents</code></td>
+                <td>S3 seam</td>
+              </tr>
+              <tr>
+                <td><strong>4 · Task pump</strong></td>
+                <td><code>correct.user.date.of.birth</code></td>
+                <td>task-worker pump</td>
+              </tr>
+              <tr>
+                <td><strong>5 · Capstone 1</strong></td>
+                <td>csv-tasks specs (5 files)</td>
+                <td>CSV domain driver + synthetic CSV strategy</td>
+              </tr>
+              <tr>
+                <td><strong>6 · Capstone 2</strong></td>
+                <td><code>academic.admin.complete.tutor.lesson</code></td>
+                <td>tutor seam</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Slide 15: Track B -->
+      <section class="slide wide" id="track-b" data-slide="15">
+        <h2><span class="kicker">Chapter 6 · Your task</span>Track B — users, comms, lifecycle</h2>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Specs</th>
+                <th>Harness pieces it creates</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1 · Warm-up</strong></td>
+                <td><code>set.support.status</code>, <code>update.user.properties</code></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><strong>2 · Claim registry</strong></td>
+                <td><code>admin.todo.state</code>, <code>admin.todo.cancel.latest</code></td>
+                <td>first cohort claims</td>
+              </tr>
+              <tr>
+                <td><strong>3 · api.service easy slices</strong></td>
+                <td>AB-test blocks, then the SSN pair</td>
+                <td>minimal AdminControllerTestDriver + PII helper</td>
+              </tr>
+              <tr>
+                <td><strong>4 · Comms seams</strong></td>
+                <td>send-email slice, send-sms slice</td>
+                <td>email seam, SMS local client</td>
+              </tr>
+              <tr>
+                <td><strong>5 · PII standalone</strong></td>
+                <td><code>update.student.legal.name</code></td>
+                <td>scope ownership beyond <code>_id</code></td>
+              </tr>
+              <tr>
+                <td><strong>6 · Capstone 1 — lifecycle wave</strong> (gated on a driver fix)</td>
+                <td>enrollment-history, withdrawal+funnel, detection-resolving, bulk withdrawal; then <code>academic.admin.sap</code>, <code>academic.admin.removal</code></td>
+                <td>lifecycle test hook</td>
+              </tr>
+              <tr>
+                <td><strong>7 · Capstone 2 — journey</strong></td>
+                <td><code>get.course.start.end.dates.for.user.query.handler</code> — kills 3 stubs, seeds a real learning journey</td>
+                <td>real-journey seeding pattern</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="footnote">
+          <strong>Slicing note:</strong> <code>admin.controller.api.service.spec.ts</code> has 11 top-level describe blocks, each booting its own module. Each slice converts in place as its own PR — the file shrinks slice by slice until nothing boots a private module.
+        </p>
+      </section>
+
+      <!-- Slide 16: Scope + learn more -->
+      <section class="slide" id="closing" data-slide="16">
+        <h2><span class="kicker">Chapter 6 · Your task</span>What's out, and where to learn more</h2>
+
+        <h3>Not in scope</h3>
+        <p>
+          Five admin specs stay as they are — <strong>pure-logic unit tests</strong> with no module and no DB. Nothing to migrate: the four <code>*.dto.spec</code> files and <code>sap.report.mapper.spec</code>.
+        </p>
+        <p>
+          Remember chapter 2: pure logic with no collaborators is the one good reason to stay at the unit level.
+        </p>
+
+        <h3>Where to learn more</h3>
+        <ul>
+          <li><strong>The map:</strong> <code>backend/test/api/driver/README.md</code></li>
+          <li><strong>The rules:</strong> the <code>/write-tests</code> skill</li>
+          <li><strong>The template:</strong> <code>test/admin/course.registration.admin.controller.spec.ts</code></li>
+          <li><strong>The task board:</strong> Notion · "One App to Test Them All — admin specs migration"</li>
+        </ul>
+
+        <p class="callout">
+          Seed real data. Run the real path. Trust the green.
+        </p>
+
+        <p class="meta" style="font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);">
+          Questions → Or · welcome aboard
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
