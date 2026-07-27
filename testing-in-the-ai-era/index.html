@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Testing at the Product Boundary · Testing in the AI Era</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%2319191e'/><path d='M104 268 L 208 372 L 414 150' fill='none' stroke='%2355d68f' stroke-width='42' stroke-linecap='round' stroke-linejoin='round'/><circle cx='104' cy='268' r='42' fill='none' stroke='%23e57770' stroke-width='12'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <main>
+      <section class="slide" id="title" data-slide="1">
+        <svg
+          class="hero"
+          viewBox="0 0 560 360"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="A test path crossing several system boundaries and ending in a green observable outcome"
+        >
+          <defs>
+            <linearGradient id="hero-line" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="oklch(0.58 0.02 264)" />
+              <stop offset="100%" stop-color="oklch(0.82 0.15 155)" />
+            </linearGradient>
+            <radialGradient id="hero-glow" cx="86%" cy="50%" r="28%">
+              <stop offset="0%" stop-color="oklch(0.78 0.14 155 / 0.34)" />
+              <stop offset="100%" stop-color="oklch(0.78 0.14 155 / 0)" />
+            </radialGradient>
+          </defs>
+          <rect width="560" height="360" rx="40" fill="oklch(0.2 0.012 270)" />
+          <rect width="560" height="360" rx="40" fill="url(#hero-glow)" />
+          <path d="M68 180 H474" stroke="url(#hero-line)" stroke-width="6" stroke-linecap="round" />
+          <g fill="oklch(0.22 0.014 270)" stroke="oklch(0.5 0.02 264)" stroke-width="3">
+            <circle cx="96" cy="180" r="30" />
+            <circle cx="236" cy="180" r="30" />
+            <circle cx="376" cy="180" r="30" />
+          </g>
+          <g fill="oklch(0.82 0.15 155)" font-family="JetBrains Mono, monospace" font-size="14" text-anchor="middle">
+            <text x="96" y="185">API</text>
+            <text x="236" y="185">APP</text>
+            <text x="376" y="185">DB</text>
+          </g>
+          <circle cx="484" cy="180" r="45" fill="oklch(0.25 0.05 155)" stroke="oklch(0.78 0.14 155)" stroke-width="4" />
+          <path d="M462 181 l 15 15 l 30 -34" fill="none" stroke="oklch(0.86 0.15 152)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+          <text x="276" y="270" fill="oklch(0.62 0.01 264)" font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle" letter-spacing="2">ONE ACTION · REAL PATH · OBSERVABLE RESULT</text>
+        </svg>
+        <p class="eyebrow">Testing in the AI era</p>
+        <h1>Testing at the Product Boundary</h1>
+        <p class="subtitle">
+          Test what the product promises, through the highest realistic entry point.
+        </p>
+        <p class="meta">Or Eliyahu · July 2026</p>
+      </section>
+
+      <section class="slide" id="executable-intent" data-slide="2">
+        <h2><span class="kicker">Chapter 1 · What tests are for</span>A test is executable product intent</h2>
+        <p class="lede">
+          A good test says what the system promises. Then it proves the promise on every run.
+        </p>
+
+        <div class="promise">
+          <span class="promise-label">When</span>
+          <p>a staff member reactivates a withdrawn student</p>
+          <span class="promise-label">Then</span>
+          <p>the student becomes active, the change is recorded, and no withdrawal notice is sent</p>
+        </div>
+
+        <div class="two-col compact">
+          <div class="col bad">
+            <h3>Wiring statement</h3>
+            <p><code>expect(emailService.send).not.toHaveBeenCalled()</code></p>
+            <p class="muted">Describes one implementation.</p>
+          </div>
+          <div class="col">
+            <h3>Product statement</h3>
+            <p><code>expect(withdrawalNotices).toEqual([])</code></p>
+            <p class="muted">Describes what an observer sees.</p>
+          </div>
+        </div>
+
+        <p class="callout">Test the promise, not the route the code currently takes.</p>
+      </section>
+
+      <section class="slide wide" id="pyramid" data-slide="3">
+        <h2><span class="kicker">Chapter 1 · What tests are for</span>The classic test pyramid</h2>
+        <p class="lede">
+          The layers differ by entry point and how much of the real system they include.
+        </p>
+
+        <div class="pyramid-layout">
+          <div class="pyramid" aria-label="Test pyramid with unit tests at the base, integration tests in the middle, and end-to-end tests at the top">
+            <div class="pyramid-layer e2e"><strong>E2E</strong><span>client entry</span></div>
+            <div class="pyramid-layer integration"><strong>Integration</strong><span>HTTP or CLI entry</span></div>
+            <div class="pyramid-layer unit"><strong>Unit</strong><span>class or function entry</span></div>
+          </div>
+          <div class="definitions">
+            <div class="definition">
+              <span class="definition-mark">01</span>
+              <p><strong>Unit</strong> isolates one function or class. Collaborators are removed or mocked.</p>
+            </div>
+            <div class="definition">
+              <span class="definition-mark">02</span>
+              <p><strong>Integration</strong> starts where the real user or caller starts: an HTTP API or command-line input.</p>
+            </div>
+            <div class="definition">
+              <span class="definition-mark">03</span>
+              <p><strong>E2E</strong> is integration from the client app: browser, mobile app, or another client.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="footnote">
+          “Unit” and “integration” are fuzzy labels. The useful question is: <strong>which real boundary did we cross?</strong>
+        </p>
+      </section>
+
+      <section class="slide" id="old-constraint" data-slide="4">
+        <h2><span class="kicker">Chapter 1 · What tests are for</span>The pyramid optimized for an old constraint</h2>
+        <p class="lede">
+          Broad tests were expensive to write, slow to run, and easy to break. So teams bought speed with isolation.
+        </p>
+
+        <div class="constraint-equation">
+          <div class="equation-term">
+            <span class="big-number">Many</span>
+            <span>cheap unit tests</span>
+          </div>
+          <span class="equation-sign">+</span>
+          <div class="equation-term">
+            <span class="big-number">Few</span>
+            <span>expensive broad tests</span>
+          </div>
+          <span class="equation-sign">=</span>
+          <div class="equation-term result">
+            <span class="big-number">Fast</span>
+            <span>enough feedback</span>
+          </div>
+        </div>
+
+        <p>
+          That trade was rational. But it was never a law of software. It was a response to the <strong>cost of broad tests</strong>.
+        </p>
+
+        <p class="footnote">
+          Martin Fowler's test pyramid makes the same cost argument: broad tests should be fewer when they are slow and brittle.
+        </p>
+      </section>
+
+      <section class="slide" id="confidence-bottleneck" data-slide="5">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>AI made code cheap. Confidence is still expensive.</h2>
+        <p class="lede">
+          An agent can produce ten implementations before a human has finished reviewing one.
+        </p>
+
+        <div class="meters">
+          <div class="meter-row">
+            <span class="meter-label">Code generation</span>
+            <div class="meter"><span style="width: 96%"></span></div>
+            <span class="meter-value">minutes</span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">Human review</span>
+            <div class="meter slow"><span style="width: 42%"></span></div>
+            <span class="meter-value">hours</span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">Production learning</span>
+            <div class="meter danger"><span style="width: 18%"></span></div>
+            <span class="meter-value">days</span>
+          </div>
+        </div>
+
+        <p class="callout">The bottleneck moved from writing code to knowing whether the code is right.</p>
+      </section>
+
+      <section class="slide wide" id="lying-unit" data-slide="6">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>Anatomy of a lying unit test</h2>
+        <p class="lede">
+          This pattern comes from a real test. Names are shortened; the structure is unchanged.
+        </p>
+
+        <div class="code-compare">
+          <div>
+            <p class="code-label bad-label">Arrange the answers</p>
+<pre><code>const accountStore = {
+  find: jest.fn().mockResolvedValue(fakeAccount),
+};
+const notifier = {
+  sync: jest.fn().mockResolvedValue({ success: true }),
+};
+const internalCommands = captureCommands();</code></pre>
+          </div>
+          <div>
+            <p class="code-label bad-label">Assert the calls</p>
+<pre><code>await handler.execute(request);
+
+expect(notifier.sync).toHaveBeenCalled();
+expect(internalCommands).toContainEqual(
+  expect.any(UpdateAccessCommand),
+);</code></pre>
+          </div>
+        </div>
+
+        <div class="mock-loop">
+          <span>Mock says “account exists”</span>
+          <span>→</span>
+          <span>code sends command</span>
+          <span>→</span>
+          <span>test checks command</span>
+        </div>
+
+        <p class="callout danger-callout">We gave the test the answer. It proved that the code repeated it.</p>
+      </section>
+
+      <section class="slide wide" id="missing-proof" data-slide="7">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>Everything that unit test did not prove</h2>
+        <p class="lede">
+          Every red break below can ship while the mock-heavy unit test stays green.
+        </p>
+
+        <ol class="path broken-path">
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Auth + input</span>
+            <span class="hop-detail">The request may never reach the handler.</span>
+          </li>
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Route wiring</span>
+            <span class="hop-detail">The request may call the wrong code.</span>
+          </li>
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Real account read</span>
+            <span class="hop-detail">The query may use the wrong key.</span>
+          </li>
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Database write</span>
+            <span class="hop-detail">The update may match zero records.</span>
+          </li>
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Downstream work</span>
+            <span class="hop-detail">The background job may do nothing.</span>
+          </li>
+          <li class="hop broken">
+            <span class="hop-num">Unproven</span>
+            <span class="hop-label">Final state</span>
+            <span class="hop-detail">Access and notifications may stay wrong.</span>
+          </li>
+        </ol>
+
+        <div class="piece danger-piece">
+          <p class="piece-label">A second common shape</p>
+          <p class="piece-body">
+            Mock a query → mock a publisher → assert both mocks were called. The test knows the route, but never checks the destination.
+          </p>
+        </div>
+      </section>
+
+      <section class="slide" id="ai-amplifies" data-slide="8">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>AI amplifies false confidence</h2>
+        <p class="lede">
+          Agents are excellent at copying visible structure. A mock-heavy test exposes the structure and the expected answer together.
+        </p>
+
+        <div class="feedback-loops">
+          <div class="loop bad-loop">
+            <p class="loop-title">Closed implementation loop</p>
+            <ol>
+              <li>Read the current code.</li>
+              <li>Mock every collaborator.</li>
+              <li>Assert the same calls.</li>
+              <li>Report high coverage.</li>
+            </ol>
+            <p class="loop-result">Fast green. Weak evidence.</p>
+          </div>
+          <div class="loop good-loop">
+            <p class="loop-title">Independent product loop</p>
+            <ol>
+              <li>Read the requirement.</li>
+              <li>Seed the real preconditions.</li>
+              <li>Act through the public boundary.</li>
+              <li>Assert the visible result.</li>
+            </ol>
+            <p class="loop-result">Useful green. Refactor freedom.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="new-default" data-slide="9">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>The new default: one real action, all visible effects</h2>
+        <p class="lede">
+          A real example calls a staff HTTP endpoint and checks what the whole system leaves behind.
+        </p>
+
+        <div class="integration-story">
+          <div class="story-act">
+            <span class="story-tag">Act once</span>
+<pre><code>await driver.request()
+  .put(path)
+  .set('Authorization', auth)
+  .send({ notes })
+  .expect(200);</code></pre>
+          </div>
+          <div class="story-asserts">
+            <span class="story-tag">Observe broadly</span>
+            <ul class="check-list">
+              <li>status changed back to active</li>
+              <li>audit record stored with the reason</li>
+              <li>analytics recorded the status change</li>
+              <li>no withdrawal document sent to the student records system</li>
+              <li>no withdrawal notice sent to the student</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="footnote">
+          Analytics, email, and task transport are captured at their external delivery seams. Everything inside the application stays real.
+        </p>
+      </section>
+
+      <section class="slide wide" id="test-travel" data-slide="10">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>How far should one test travel?</h2>
+        <p class="lede">
+          Start as high as practical. Stop only where production leaves your control.
+        </p>
+
+        <ol class="path journey">
+          <li class="hop real">
+            <span class="hop-num">Entry</span>
+            <span class="hop-label">HTTP or CLI</span>
+            <span class="hop-detail">Real request and validation.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">Request routing</span>
+            <span class="hop-detail">Production route and input validation.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">Handlers + services</span>
+            <span class="hop-detail">Business rules and orchestration.</span>
+          </li>
+          <li class="hop real">
+            <span class="hop-num">Real</span>
+            <span class="hop-label">Database</span>
+            <span class="hop-detail">Reads, writes, indexes, serialization.</span>
+          </li>
+          <li class="hop seam">
+            <span class="hop-num">Seam</span>
+            <span class="hop-label">External delivery</span>
+            <span class="hop-detail">Capture email, queue, analytics, object storage.</span>
+          </li>
+        </ol>
+
+        <div class="boundary-rule">
+          <span class="boundary-brace">}</span>
+          <p><strong>Real inside.</strong><br />Controlled at the edge.</p>
+        </div>
+      </section>
+
+      <section class="slide" id="exceptions" data-slide="11">
+        <h2><span class="kicker">Chapter 2 · The AI-era inversion</span>Unit tests still have a job</h2>
+        <p class="lede">
+          “Last resort” does not mean “never.” It means every lower-level test needs a concrete reason.
+        </p>
+
+        <div class="reason-grid">
+          <div class="reason-card">
+            <span class="reason-icon">ƒ</span>
+            <h3>Pure logic</h3>
+            <p>A formula, parser, state machine, or date calculation with no collaborators.</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">×N</span>
+            <h3>Large input matrix</h3>
+            <p>Hundreds of combinations where broad setup adds cost but no confidence.</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">!</span>
+            <h3>Unreachable failure</h3>
+            <p>A precise error path that cannot be triggered honestly through a public boundary.</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">∅</span>
+            <h3>Async absence</h3>
+            <p>A negative side-effect rule with no observable completion signal.</p>
+          </div>
+        </div>
+
+        <p class="callout">Choose the lowest level that adds evidence—not the lowest level that is easy to mock.</p>
+      </section>
+
+      <section class="slide" id="requirement-distance" data-slide="12">
+        <h2><span class="kicker">Chapter 3 · Humans and agents</span>Closer to the requirement. Farther from the implementation.</h2>
+        <p class="lede">
+          The closer a test reads to product language, the harder it is for an incorrect implementation to satisfy by accident.
+        </p>
+
+        <div class="distance-scale">
+          <div class="distance-end implementation">
+            <span class="distance-title">Implementation</span>
+            <code>calls updateStatus()</code>
+            <code>dispatches command X</code>
+            <code>invokes email mock</code>
+          </div>
+          <div class="distance-line">
+            <span class="distance-marker"></span>
+          </div>
+          <div class="distance-end requirement">
+            <span class="distance-title">Product requirement</span>
+            <strong>“Reactivating a withdrawn student restores access without sending a withdrawal notice.”</strong>
+          </div>
+        </div>
+
+        <ul class="benefit-list">
+          <li><strong>Refactors become cheap:</strong> internal calls may change while the promise stays fixed.</li>
+          <li><strong>Reviews become clear:</strong> the test explains the behavior without a tour of the code.</li>
+          <li><strong>Missing requirements become visible:</strong> vague outcomes cannot hide behind mock assertions.</li>
+        </ul>
+      </section>
+
+      <section class="slide wide" id="contract-moves-with-product" data-slide="13">
+        <h2><span class="kicker">Chapter 3 · Humans and agents</span>The contract moves only when the product moves</h2>
+        <p class="lede">
+          Two real changes to the same learning journey—the student progress page—show the difference.
+        </p>
+
+        <div class="two-col history-cols">
+          <div class="col">
+            <p class="history-label">Internal optimization</p>
+            <h3>Optimize the whole feature. Keep every test.</h3>
+<pre><code>5 production files changed
++237 / -167 lines
+
+repeated scans + sorts
+        ↓
+indexed lookups
+
+integration spec: 0 lines changed</code></pre>
+            <p>
+              Registration, lesson, and exam lookups became faster. Every product outcome stayed fixed, so the behavior suite stayed <strong>byte-for-byte unchanged</strong>.
+            </p>
+          </div>
+          <div class="col changed">
+            <p class="history-label">Small product requirement</p>
+            <h3>Change the promise. Change the test.</h3>
+<pre><code><span class="removed">- drops a failed withdrawn attempt</span>
+<span class="added">+ keeps a failed withdrawn attempt</span>
+
+<span class="removed">- not.toContain(attemptId)</span>
+<span class="added">+ toContain(attemptId)</span>
+
+<span class="added">+ progressionEnded: true</span></code></pre>
+            <p>
+              The product now showed a past failed attempt instead of hiding it. The agent had to make that behavior change visible in the test diff.
+            </p>
+          </div>
+        </div>
+
+        <p class="callout">
+          Implementation change: tests stay still. Product change: tests must move.
+        </p>
+
+        <p class="footnote">
+          Repository history: performance rewrite <code>e8f3b6d2</code>; behavior change <code>912d3930</code> and <code>568bdf4c</code>.
+        </p>
+      </section>
+
+      <section class="slide wide" id="tdd-agent-contract" data-slide="14">
+        <h2><span class="kicker">Chapter 3 · Humans and agents</span>TDD becomes an agent contract</h2>
+        <p class="lede">
+          The test is the small, executable agreement between product intent and generated code.
+        </p>
+
+        <ol class="tdd-cycle">
+          <li>
+            <span class="cycle-word">Specify</span>
+            <span class="cycle-detail">Write the observable behavior.</span>
+          </li>
+          <li>
+            <span class="cycle-word">Fail</span>
+            <span class="cycle-detail">Prove the test can detect its absence.</span>
+          </li>
+          <li>
+            <span class="cycle-word">Generate</span>
+            <span class="cycle-detail">Let the agent implement one increment.</span>
+          </li>
+          <li>
+            <span class="cycle-word">Verify</span>
+            <span class="cycle-detail">Run the real path and inspect the diff.</span>
+          </li>
+          <li>
+            <span class="cycle-word">Keep</span>
+            <span class="cycle-detail">The contract becomes regression coverage.</span>
+          </li>
+        </ol>
+
+        <p class="callout">
+          The agent can change the implementation. It should not negotiate with the expected product outcome.
+        </p>
+
+        <p class="footnote">
+          Anthropic recommends TDD for coding agents as “guardrails and clear success criteria.”
+        </p>
+      </section>
+
+      <section class="slide" id="integration-readability" data-slide="15">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>The confidence is broad. The setup can be brutal.</h2>
+        <p class="lede">
+          Integration tests become hard to read when infrastructure drowns out the one business fact that matters.
+        </p>
+
+        <div class="noise-stack">
+          <div class="noise-row loud"><span>17 linked database records</span><strong>setup</strong></div>
+          <div class="noise-row loud"><span>module boot and provider overrides</span><strong>wiring</strong></div>
+          <div class="noise-row loud"><span>ids, dates, clocks, cleanup</span><strong>plumbing</strong></div>
+          <div class="noise-row signal"><span>student withdrew before a course started</span><strong>the rule</strong></div>
+        </div>
+
+        <p class="callout">The test should expose the variation and hide the invariants.</p>
+      </section>
+
+      <section class="slide wide" id="async-absence" data-slide="16">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>The hardest assertion: nothing happened</h2>
+        <p class="lede">
+          Requirement: reactivating a withdrawn student must not send a withdrawal notice.
+        </p>
+
+        <div class="code-compare">
+          <div>
+            <p class="code-label bad-label">The tempting integration test</p>
+<pre><code>await driver.request()
+  .put(reactivatePath(studentId))
+  .set('Authorization', driver.auth(staffUser))
+  .send({})
+  .expect(200);
+
+await sleep(200);
+
+expect(notificationDriver.withdrawalNotices())
+  .toHaveLength(0);</code></pre>
+          </div>
+          <div class="timeline-wrap">
+            <p class="code-label">What the test actually proves</p>
+            <div class="timeline">
+              <span class="tick start">command</span>
+              <span class="window">200 ms window</span>
+              <span class="tick assertion">assert 0</span>
+              <span class="late-email">broken email arrives</span>
+            </div>
+            <p class="timeline-caption">
+              A slow worker makes a broken product look correct.
+            </p>
+          </div>
+        </div>
+
+        <p class="callout danger-callout">“Not yet” is not the same as “will not.”</p>
+      </section>
+
+      <section class="slide wide" id="prove-negative" data-slide="17">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>Three honest ways to prove a negative async effect</h2>
+        <p class="lede">
+          There is no universal trick. Pick the strongest completion boundary the system honestly gives you.
+        </p>
+
+        <div class="solution-grid">
+          <div class="solution-card">
+            <span class="solution-number">01</span>
+            <h3>Wait for a causal signal</h3>
+<pre><code>await driver.waitForStatus();
+const emails = driver.emails();
+expect(emails).toEqual([]);</code></pre>
+            <p>
+              The signal must happen <strong>after</strong> the email decision. Strong broad coverage, but it depends on critical ordering details and is hard to write as black-box TDD.
+            </p>
+          </div>
+          <div class="solution-card">
+            <span class="solution-number">02</span>
+            <h3>Expose workflow completion</h3>
+<pre><code>await driver.waitForDone(runId);
+const emails = driver.emails();
+expect(emails).toEqual([]);</code></pre>
+            <p>
+              Use a durable outbox, task state, or completion seam. Best when completion is itself useful to product or operations.
+            </p>
+          </div>
+          <div class="solution-card">
+            <span class="solution-number">03</span>
+            <h3>Use a focused unit test</h3>
+<pre><code>const commands = policy.for(reversal);
+expect(commands).not.toContainEmail();</code></pre>
+            <p>
+              Isolate the branching policy when no honest completion signal exists. Keep one positive integration test proving the email pipeline works.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="drivers" data-slide="18">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>Drivers turn wiring into a story</h2>
+        <p class="lede">
+          The spec says what exists, what happens, and what becomes visible. The driver knows how.
+        </p>
+
+        <div class="code-story">
+          <div class="story-column">
+            <p class="code-label">Without a driver</p>
+<pre><code>await students.insertOne(student);
+await courses.insertOne(course);
+await enrollments.insertOne(enrollment);
+await lessons.insertMany(lessons);
+const response = await http
+  .get(progressPath(studentId))
+  .expect(200);</code></pre>
+          </div>
+          <div class="story-arrow">→</div>
+          <div class="story-column">
+            <p class="code-label good-label">With given / when / then</p>
+<pre><code>const progress = await driver.given
+  .student((student) =&gt;
+    student.withId(studentId))
+  .given.course((course) =&gt;
+    course.withId(courseId).withLessons(4))
+  .given.enrollment((enrollment) =&gt;
+    enrollment.withStudent(studentId))
+  .when.getProgress(studentId);</code></pre>
+          </div>
+        </div>
+
+        <p class="callout">The spec owns meaning. The driver owns mechanics.</p>
+      </section>
+
+      <section class="slide wide" id="good-driver" data-slide="19">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>How to write a good test driver</h2>
+        <p class="lede">
+          A driver is a thin domain language over real setup, a real action, and real outcomes.
+        </p>
+
+        <div class="two-col builder-cols">
+          <div class="col">
+            <h3>The shape</h3>
+<pre><code>driver.given
+  .student((student) =&gt; ...)
+  .given.course((course) =&gt; ...)
+  .when.getProgress(studentId);
+
+const saved = await driver.then
+  .storedProgress(studentId);</code></pre>
+          </div>
+          <div class="col">
+            <h3>The rules</h3>
+            <ul class="check-list">
+              <li><code>given</code> records setup and returns the driver</li>
+              <li><code>when</code> writes pending data, then performs one real action</li>
+              <li><code>then</code> reads outcomes from the real system</li>
+              <li>the spec creates and connects important IDs</li>
+              <li>all expectations stay in the spec</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="piece">
+          <p class="piece-label">Do not hide the test inside the driver</p>
+          <p class="piece-body">
+            One driver belongs to one feature spec. No async <code>given</code>, no entity returned from setup, no expected-value helpers, and no mocked internal services.
+          </p>
+        </div>
+      </section>
+
+      <section class="slide wide" id="builders-seeders" data-slide="20">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>Builders make valid data. Seeders hide fixed worlds.</h2>
+        <p class="lede">
+          Two layers remove noise without hiding the condition under test.
+        </p>
+
+        <div class="two-col builder-cols">
+          <div class="col">
+            <h3>Builder: one valid entity</h3>
+<pre><code>student
+  .withId(studentId)
+  .withStudentInformation((info) =&gt;
+    info.withProgram(TEST_PROGRAM));</code></pre>
+            <p>Owns defaults, shape, nested entities, and meaningful presets.</p>
+          </div>
+          <div class="col">
+            <h3>Local scenario seeder: one fixed world</h3>
+<pre><code>studentEnrolledIn(studentId, courseId)
+  .given.progress((progress) =&gt;
+    progress.withCompletedLessons(2));</code></pre>
+            <p>Hides repeated invariants. The test body shows only what changes.</p>
+          </div>
+        </div>
+
+        <div class="visibility-rule">
+          <span>Visible in the test</span>
+          <strong>load-bearing variation</strong>
+          <span>Hidden in the seeder</span>
+          <strong>fixed invariant</strong>
+        </div>
+      </section>
+
+      <section class="slide wide" id="good-builder" data-slide="21">
+        <h2><span class="kicker">Chapter 4 · Making broad tests readable</span>How to write a good builder</h2>
+        <p class="lede">
+          A builder owns one valid entity. Tests state only the fields that matter.
+        </p>
+
+        <div class="two-col builder-cols">
+          <div class="col">
+            <h3>One predictable shape</h3>
+<pre><code>new StudentBuilder()
+  .withId(studentId)
+  .withProgram('software-engineering')
+  .withEnrollment((enrollment) =&gt;
+    enrollment
+      .withCourse(courseId)
+      .withStatus('active'))
+  .build();</code></pre>
+          </div>
+          <div class="col">
+            <h3>The rules</h3>
+            <ul class="check-list">
+              <li>start with valid, boring defaults</li>
+              <li>use <code>withField(value)</code> for scalar fields</li>
+              <li>use a builder callback for every nested entity</li>
+              <li>add setters only when a test varies that field</li>
+              <li>add convenience methods only after a repeated real use</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="callout">
+          Never replace a builder with an options object or a hand-written database record.
+        </p>
+      </section>
+
+      <section class="slide" id="slow-objection" data-slide="22">
+        <h2><span class="kicker">Chapter 5 · Making broad tests fast</span>The obvious objection: integration tests are slow</h2>
+        <p class="lede">
+          A naïve suite rebuilds the world for every spec file.
+        </p>
+
+        <div class="boot-stack">
+          <div class="boot-card"><span>01</span><strong>Build the application container</strong><small>scan metadata, create dependencies</small></div>
+          <div class="boot-card"><span>02</span><strong>Start the backend</strong><small>register routes and request handlers</small></div>
+          <div class="boot-card"><span>03</span><strong>Prepare the database</strong><small>clone or run migrations</small></div>
+          <div class="boot-card"><span>04</span><strong>Seed and clean</strong><small>create the world, then tear it down</small></div>
+        </div>
+
+        <p>
+          Repeat that hundreds of times and the suite becomes a tax. Developers respond by skipping tests—or mocking real handlers to make each private app smaller.
+        </p>
+      </section>
+
+      <section class="slide wide" id="cost-multiplies" data-slide="23">
+        <h2><span class="kicker">Chapter 5 · Making broad tests fast</span>The naïve cost multiplies by every file</h2>
+        <p class="lede">
+          The expensive part is not the assertion. It is rebuilding the same application.
+        </p>
+
+        <div class="cost-formula">
+          <span class="cost-n">N suites</span>
+          <span class="cost-op">×</span>
+          <div class="cost-group">
+            <span>app boot</span>
+            <span>database setup</span>
+            <span>teardown</span>
+          </div>
+          <span class="cost-op">=</span>
+          <span class="cost-result">slow feedback</span>
+        </div>
+
+        <div class="suite-grid" aria-label="Many test files each booting a separate app">
+          <div>spec 01<span>APP + DB</span></div>
+          <div>spec 02<span>APP + DB</span></div>
+          <div>spec 03<span>APP + DB</span></div>
+          <div>spec 04<span>APP + DB</span></div>
+          <div>spec 05<span>APP + DB</span></div>
+          <div>spec 06<span>APP + DB</span></div>
+        </div>
+
+        <p class="callout danger-callout">The architecture of the test harness decides whether good tests are affordable.</p>
+      </section>
+
+      <section class="slide wide" id="shared-app" data-slide="24">
+        <h2><span class="kicker">Chapter 5 · Making broad tests fast</span>Boot the app once. Isolate the data.</h2>
+        <p class="lede">
+          Share expensive infrastructure. Keep every scenario independent through ownership.
+        </p>
+
+        <div class="shared-harness">
+          <div class="shared-core">
+            <span class="shared-label">Once per test run</span>
+            <strong>Real backend application</strong>
+            <strong>Real migrated database</strong>
+          </div>
+          <div class="shared-lines"></div>
+          <div class="shared-specs">
+            <div><span>Spec A</span><small>unique ids · own cleanup</small></div>
+            <div><span>Spec B</span><small>unique ids · own cleanup</small></div>
+            <div><span>Spec C</span><small>unique ids · own cleanup</small></div>
+          </div>
+        </div>
+
+        <div class="two-col compact">
+          <div class="col">
+            <h3>Shared</h3>
+            <p>App boot, real modules, DB connection, migrations, external seams.</p>
+          </div>
+          <div class="col">
+            <h3>Isolated</h3>
+            <p>Fresh IDs, scoped collections, claimed bounded values, exact cleanup receipts.</p>
+          </div>
+        </div>
+
+        <p class="footnote">
+          The app starts once in the test runner's global setup. Each spec only seeds its world, makes a real request, and cleans what it owns.
+        </p>
+      </section>
+
+      <section class="slide" id="operating-rules" data-slide="25">
+        <h2><span class="kicker">Chapter 5 · Making broad tests fast</span>The operating rules</h2>
+        <p class="lede">
+          Optimize for confidence per test—not tests per class.
+        </p>
+
+        <ol class="rules">
+          <li><strong>Start at the real product entry point.</strong><span>HTTP API, command-line input, or client app.</span></li>
+          <li><strong>Keep internal collaborators real.</strong><span>Seed the state their real handlers read.</span></li>
+          <li><strong>Fake only true external delivery.</strong><span>Capture the email, task, analytics event, or file.</span></li>
+          <li><strong>Assert exact observable outcomes.</strong><span>State, events, return values, and side effects.</span></li>
+          <li><strong>Make async completion deterministic.</strong><span>Never confuse a timeout with proof.</span></li>
+          <li><strong>Use unit tests with a concrete reason.</strong><span>Pure logic, large matrices, unreachable paths, or honest negative checks.</span></li>
+        </ol>
+
+        <p class="callout final-callout">Seed the real world. Run the real path. Give humans and agents a green worth trusting.</p>
+
+        <div class="sources">
+          <span>Further reading</span>
+          <a href="https://kentcdodds.com/blog/write-tests">Kent C. Dodds · Mostly integration</a>
+          <a href="https://martinfowler.com/bliki/TestPyramid.html">Martin Fowler · Test Pyramid</a>
+          <a href="https://abseil.io/resources/swe-book/html/ch12.html">Google · Test behavior, not methods</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
