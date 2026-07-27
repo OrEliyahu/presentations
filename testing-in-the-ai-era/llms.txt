@@ -1,0 +1,17 @@
+# Testing at the Product Boundary
+
+> A behavior-first testing philosophy for AI-assisted software development. Prefer integration tests through real product entry points, keep internal collaborators real, capture only external delivery boundaries, and use unit tests only for a concrete reason.
+
+## Read
+
+- [Markdown article](https://oreliyahu.github.io/presentations/testing-in-the-ai-era/article.md)
+- [Visual presentation](https://oreliyahu.github.io/presentations/testing-in-the-ai-era/)
+
+## Main ideas
+
+- AI made code cheap; confidence remains expensive.
+- Tests should encode observable product behavior, not internal calls.
+- Integration tests should begin at the HTTP API, command-line input, or client application.
+- Builders create valid entities; drivers operate the real system; local scenario seeders hide repeated invariants.
+- Internal rewrites should leave behavior tests unchanged. Product changes should change them.
+- Broad tests can remain fast by sharing the real application and database while isolating test-owned data.
